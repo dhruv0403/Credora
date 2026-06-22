@@ -1,0 +1,1410 @@
+
+<title>LoanBook — Personal Loan Tracker</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ground:#F7F6F3;--ground2:#EEECEA;--sidebar:#0F1B2D;
+  --text:#1A1A2E;--text2:#555570;--text3:#8888A0;
+  --accent:#C8862A;--green:#1E5F3F;--red:#8B2E2E;--blue:#1A3D6B;
+  --card:#FFF;--border:#E2E1DE;--border2:#F0EEEB;
+  --shadow:0 1px 3px rgba(15,27,45,.07),0 1px 2px rgba(15,27,45,.04);
+  --shadow-lg:0 8px 24px rgba(15,27,45,.1),0 2px 8px rgba(15,27,45,.05);
+  --r:10px;--r-lg:14px;
+  --fd:Georgia,'Palatino Linotype',serif;
+  --fb:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --fm:'Courier New',Courier,monospace;
+}
+html{font-size:15px}
+body{font-family:var(--fb);background:var(--ground);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-height:100vh;background:var(--sidebar);background-image:repeating-linear-gradient(180deg,transparent,transparent 38px,rgba(255,255,255,.04) 38px,rgba(255,255,255,.04) 39px);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;border-right:3px solid var(--accent)}
+.logo-area{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
+.logo-name{font-family:var(--fd);font-size:21px;font-weight:700;color:#fff;letter-spacing:-.5px}
+.logo-sub{font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+.nav-section{flex:1;padding:12px 0;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;color:rgba(255,255,255,.48);font-size:13px;font-weight:500;border:none;background:none;width:100%;text-align:left;transition:.15s;border-left:3px solid transparent}
+.nav-item:hover{color:rgba(255,255,255,.82);background:rgba(255,255,255,.04)}
+.nav-item.active{color:#fff;background:rgba(200,134,42,.13);border-left-color:var(--accent)}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:.7}
+.nav-item.active svg{opacity:1}
+.nav-divider{height:1px;background:rgba(255,255,255,.06);margin:6px 20px}
+.sidebar-foot{padding:14px 20px;border-top:1px solid rgba(255,255,255,.05);font-size:10px;color:rgba(255,255,255,.18);letter-spacing:.07em}
+
+/* MAIN */
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 26px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
+.topbar-title{font-family:var(--fd);font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
+.topbar-back{width:28px;height:28px;border-radius:7px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:.15s;flex-shrink:0}
+.topbar-back:hover{background:var(--ground2);color:var(--text)}
+.topbar-actions{display:flex;align-items:center;gap:8px}
+.content{padding:22px 26px;max-width:1100px;width:100%}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.15s;white-space:nowrap;font-family:var(--fb)}
+.btn svg{width:14px;height:14px}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#b5771f}
+.btn-outline{background:transparent;color:var(--text2);border:1.5px solid var(--border)}.btn-outline:hover{border-color:var(--text3);color:var(--text)}
+.btn-ghost{background:transparent;color:var(--text2)}.btn-ghost:hover{background:var(--ground2);color:var(--text)}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#6f2424}
+.btn-success{background:var(--green);color:#fff}.btn-success:hover{background:#16472f}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
+.btn-lg{padding:11px 22px;font-size:14px;border-radius:10px}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow)}
+.card-hd{padding:15px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
+.card-hd h3{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
+.card-bd{padding:18px}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sc-green::before{background:var(--green)}.sc-red::before{background:var(--red)}.sc-amber::before{background:var(--accent)}.sc-blue::before{background:var(--blue)}.sc-gray::before{background:var(--text3)}
+.stat-lbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:7px}
+.stat-val{font-family:var(--fm);font-size:21px;font-weight:700;letter-spacing:-.5px;line-height:1}
+.sc-green .stat-val{color:var(--green)}.sc-red .stat-val{color:var(--red)}.sc-amber .stat-val{color:var(--accent)}.sc-blue .stat-val{color:var(--blue)}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:5px}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:10.5px;font-weight:700;letter-spacing:.02em}
+.b-active{background:#D6EFE3;color:#1E5F3F}.b-overdue{background:#F9DEDE;color:#8B2E2E}
+.b-closed{background:var(--ground2);color:var(--text3)}.b-draft{background:#FEF3DB;color:#8B6010}
+.b-given{background:#D6EFE3;color:#1E5F3F}.b-taken{background:#FEF3DB;color:#8B6010}
+.b-paid{background:#D6EFE3;color:#1E5F3F}.b-upcoming{background:var(--ground2);color:var(--text3)}
+.b-overdue-sm{background:#F9DEDE;color:#8B2E2E}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+thead th{text-align:left;padding:9px 13px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1.5px solid var(--border);background:var(--ground);white-space:nowrap}
+tbody td{padding:11px 13px;border-bottom:1px solid var(--border2);color:var(--text);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr{transition:background .1s}
+tbody tr:hover td{background:var(--ground)}
+.td-mono{font-family:var(--fm);font-size:13px}
+.td-r{text-align:right}
+.td-name{font-weight:600}
+
+/* FORMS */
+.fg{margin-bottom:14px}.fg:last-child{margin-bottom:0}
+label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;letter-spacing:.02em}
+.fc{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13.5px;font-family:var(--fb);color:var(--text);background:var(--card);outline:none;transition:.15s}
+.fc:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(200,134,42,.1)}
+.fc.err{border-color:var(--red)}
+.form-err{font-size:11px;color:var(--red);margin-top:3px}
+.form-hint{font-size:11px;color:var(--text3);margin-top:3px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* WIZARD */
+.wz-wrap{max-width:560px;margin:0 auto}
+.wz-prog{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:24px;overflow-x:auto;padding:2px 0}
+.wz-step{display:flex;align-items:center}
+.wz-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:.2s}
+.wz-dot.done{background:var(--accent);color:#fff}
+.wz-dot.active{background:var(--accent);color:#fff;box-shadow:0 0 0 5px rgba(200,134,42,.18)}
+.wz-dot.pending{background:var(--ground2);color:var(--text3)}
+.wz-line{width:24px;height:2px;background:var(--border)}.wz-line.done{background:var(--accent)}
+.wz-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);overflow:hidden}
+.wz-head{padding:24px 26px 0}
+.wz-eyebrow{font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px}
+.wz-title{font-family:var(--fd);font-size:19px;font-weight:700;color:var(--text);margin-bottom:3px}
+.wz-sub{font-size:13px;color:var(--text3);margin-bottom:22px}
+.wz-body{padding:0 26px 22px}
+.wz-foot{padding:14px 26px;border-top:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;background:var(--ground)}
+
+/* OPTION CARDS */
+.opt-grid{display:grid;gap:10px}
+.opt-grid-2{grid-template-columns:1fr 1fr}
+.opt-grid-3{grid-template-columns:1fr 1fr 1fr}
+.opt-card{border:2px solid var(--border);border-radius:var(--r);padding:16px;cursor:pointer;transition:.15s;text-align:center;user-select:none}
+.opt-card:hover{border-color:var(--accent);background:#fbf5ea}
+.opt-card.sel{border-color:var(--accent);background:#fbf5ea}
+.opt-icon{font-size:24px;margin-bottom:7px}
+.opt-title{font-size:13.5px;font-weight:700;color:var(--text)}
+.opt-desc{font-size:11px;color:var(--text3);margin-top:2px}
+.opt-row{display:flex;align-items:center;gap:11px;border:2px solid var(--border);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:.15s;user-select:none}
+.opt-row:hover{border-color:var(--accent)}
+.opt-row.sel{border-color:var(--accent);background:#fbf5ea}
+.opt-radio{width:17px;height:17px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:.15s;position:relative}
+.opt-row.sel .opt-radio{border-color:var(--accent);background:var(--accent)}
+.opt-row.sel .opt-radio::after{content:'';position:absolute;inset:3px;background:#fff;border-radius:50%}
+.opt-info{flex:1}
+.oi-title{font-size:13.5px;font-weight:600;color:var(--text)}
+.oi-sub{font-size:11.5px;color:var(--text3);margin-top:1px}
+
+/* REVIEW */
+.rv-block{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.rv-head{background:var(--ground);padding:7px 13px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border)}
+.rv-row{display:flex;justify-content:space-between;align-items:center;padding:8px 13px;border-bottom:1px solid var(--border2);font-size:13px}
+.rv-row:last-child{border-bottom:none}
+.rk{color:var(--text3)}.rv{font-weight:600}
+.rv.mono{font-family:var(--fm);font-size:14px}
+
+/* LOAN HERO */
+.loan-hero{background:linear-gradient(135deg,var(--sidebar) 0%,#1e3050 100%);border-radius:var(--r-lg);padding:24px;margin-bottom:18px;position:relative;overflow:hidden}
+.loan-hero::after{content:'';position:absolute;top:-30px;right:-30px;width:110px;height:110px;border-radius:50%;background:rgba(200,134,42,.1)}
+.hero-name{font-size:21px;font-weight:700;color:#fff;font-family:var(--fd);margin-bottom:3px}
+.hero-meta{font-size:12px;color:rgba(255,255,255,.4);display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.h-stat{padding:0 18px 0 0;border-right:1px solid rgba(255,255,255,.1)}
+.h-stat:first-child{padding-left:0}
+.h-stat:last-child{border-right:none}
+.h-lbl{font-size:9.5px;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}
+.h-val{font-family:var(--fm);font-size:17px;font-weight:700;color:#fff}
+.h-val.hv-g{color:#52d68a}.h-val.hv-r{color:#f07070}.h-val.hv-a{color:var(--accent)}
+
+/* TABS */
+.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:18px}
+.tab-btn{padding:8px 16px;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.15s;font-family:var(--fb)}
+.tab-btn:hover{color:var(--text2)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* TIMELINE */
+.tl-item{display:flex;gap:12px;padding-bottom:16px;position:relative}
+.tl-item::before{content:'';position:absolute;left:13px;top:26px;bottom:0;width:1.5px;background:var(--border)}
+.tl-item:last-child::before{display:none}
+.tl-dot{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;border:1.5px solid var(--border);background:var(--ground2)}
+.tl-dot.tl-g{background:#d6efe3;border-color:#a8dac0}
+.tl-dot.tl-a{background:#fef3db;border-color:#f5d78a}
+.tl-dot.tl-b{background:#d6e8ff;border-color:#a8c8f0}
+.tl-dot.tl-r{background:#f9dede;border-color:#f0baba}
+.tl-main{flex:1;padding-top:3px}
+.tl-title{font-size:13px;font-weight:600;color:var(--text)}
+.tl-sub{font-size:11.5px;color:var(--text3);margin-top:1px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,27,45,.55);backdrop-filter:blur(2px);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:var(--card);border-radius:var(--r-lg);width:100%;max-width:420px;box-shadow:0 24px 64px rgba(15,27,45,.2);animation:fadeUp .18s ease}
+@keyframes fadeUp{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-hd{padding:17px 20px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:var(--fd);font-size:15px;font-weight:700;color:var(--text)}
+.modal-x{width:26px;height:26px;border-radius:6px;border:none;background:var(--ground2);cursor:pointer;font-size:15px;color:var(--text3);display:flex;align-items:center;justify-content:center;transition:.1s}
+.modal-x:hover{background:var(--border);color:var(--text)}
+.modal-bd{padding:18px 20px}
+.modal-ft{padding:13px 20px;border-top:1px solid var(--border2);display:flex;justify-content:flex-end;gap:8px}
+
+/* MISC */
+.prog-bar{height:5px;background:var(--ground2);border-radius:100px;overflow:hidden;margin-top:7px}
+.prog-fill{height:100%;border-radius:100px;transition:width .4s}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.chip{padding:4px 11px;border-radius:100px;font-size:11.5px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--card);color:var(--text3);transition:.15s}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.search-wrap{position:relative;flex:1;max-width:280px}
+.search-wrap svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);width:13px;height:13px}
+.search-wrap .fc{padding-left:29px}
+.alert{padding:9px 13px;border-radius:8px;font-size:12.5px;margin-bottom:14px}
+.al-warn{background:#fef3db;color:#8b6010;border:1px solid #f5d78a}
+.al-danger{background:#f9dede;color:#8b2e2e;border:1px solid #f0baba}
+.empty-state{text-align:center;padding:44px 20px}
+.es-icon{font-size:38px;margin-bottom:10px}
+.es-title{font-size:15px;font-weight:700;color:var(--text2);margin-bottom:5px;font-family:var(--fd)}
+.es-sub{font-size:13px;color:var(--text3);margin-bottom:18px}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--sidebar);color:rgba(255,255,255,.9);padding:10px 16px;border-radius:8px;font-size:13px;z-index:9999;display:none;border-left:3px solid var(--accent);box-shadow:var(--shadow-lg);animation:slideR .2s ease;max-width:300px}
+@keyframes slideR{from{transform:translateX(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+.row-between{display:flex;justify-content:space-between;align-items:center}
+.row-center{display:flex;align-items:center}
+.gap-2{gap:8px}.gap-3{gap:12px}
+.mb-3{margin-bottom:12px}.mb-4{margin-bottom:16px}.mb-5{margin-bottom:20px}.mb-6{margin-bottom:24px}
+.mt-3{margin-top:12px}.mt-4{margin-top:16px}
+.text-muted{color:var(--text3)}.text-sm{font-size:12.5px}
+.text-green{color:var(--green)}.text-red{color:var(--red)}.text-amber{color:var(--accent)}
+.font-mono{font-family:var(--fm)}.font-bold{font-weight:700}
+.hidden{display:none!important}
+.divider{height:1px;background:var(--border2);margin:16px 0}
+.section-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:10px}
+.computed-box{background:linear-gradient(135deg,#fbf5ea,#fdf9f2);border:1.5px solid rgba(200,134,42,.3);border-radius:var(--r);padding:14px 16px;margin-top:14px}
+.cb-label{font-size:10.5px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.cb-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.cb-item .cbi-lbl{font-size:10px;color:var(--text3)}
+.cb-item .cbi-val{font-family:var(--fm);font-size:15px;font-weight:700;color:var(--text);margin-top:2px}
+
+@media(max-width:820px){
+  .sidebar{width:100%;height:56px;min-height:0;flex-direction:row;position:fixed;top:auto;bottom:0;border-right:none;border-top:3px solid var(--accent)}
+  .logo-area{display:none}
+  .nav-section{flex-direction:row;padding:0;display:flex;align-items:stretch;overflow-x:auto;width:100%}
+  .nav-item{flex-direction:column;gap:2px;padding:5px 8px;font-size:9px;flex:1;justify-content:center;border-left:none;border-top:3px solid transparent}
+  .nav-item.active{border-top-color:var(--accent);border-left-color:transparent}
+  .nav-item svg{width:17px;height:17px}
+  .nav-divider,.sidebar-foot{display:none}
+  .main{margin-left:0;margin-bottom:56px}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .hero-stats{grid-template-columns:1fr 1fr;gap:14px}
+  .h-stat{border-right:none;padding:0}
+  .form-row{grid-template-columns:1fr}
+  .opt-grid-3{grid-template-columns:1fr 1fr}
+  .content{padding:14px 14px}
+  .topbar{padding:0 14px}
+  .wz-body{padding:0 18px 18px}
+  .wz-head{padding:20px 18px 0}
+  .wz-foot{padding:12px 18px}
+  .cb-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:520px){
+  .opt-grid-2{grid-template-columns:1fr}
+  .opt-grid-3{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+
+<div class="app" style="display:flex;min-height:100vh">
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="logo-area">
+    <div class="logo-name">Loan<span style="color:var(--accent)">Book</span></div>
+    <div class="logo-sub">Personal Ledger</div>
+  </div>
+  <nav class="nav-section">
+    <button class="nav-item" data-nav="dashboard" onclick="navigate('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-item" data-nav="loans" onclick="navigate('loans')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Loans
+    </button>
+    <div class="nav-divider"></div>
+    <button class="nav-item" data-nav="transactions" onclick="navigate('transactions')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      Transactions
+    </button>
+    <button class="nav-item" data-nav="expenses" onclick="navigate('expenses')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="12" y1="12" x2="12" y2="18"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      Expenses
+    </button>
+    <button class="nav-item" data-nav="reports" onclick="navigate('reports')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Reports
+    </button>
+    <div class="nav-divider"></div>
+    <button class="nav-item" data-nav="settings" onclick="navigate('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </nav>
+  <div class="sidebar-foot">LOANBOOK v1.0 POC</div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div id="page-root"></div>
+</main>
+</div>
+
+<div id="modal-root"></div>
+<div id="toast"></div>
+
+<script>
+// ── MOCK DATA ──────────────────────────────────────────────────────
+const INIT_LOANS = [
+  { id:'L001', type:'given', status:'active',
+    contact:{name:'Rahul Sharma',phone:'98765 43210',email:'rahul.sharma@gmail.com',notes:'Childhood friend. Business loan.'},
+    principal:50000, interestRate:12, interestType:'reducing', tenure:12, frequency:'monthly',
+    purpose:'Business Expansion', startDate:'2025-12-01', emi:4442, paidCount:6, createdAt:'2025-12-01' },
+  { id:'L002', type:'taken', status:'active',
+    contact:{name:'Priya Mehta',phone:'91234 56780',email:'priya.m@outlook.com',notes:'Colleague. Home renovation loan.'},
+    principal:100000, interestRate:10, interestType:'flat', tenure:24, frequency:'monthly',
+    purpose:'Home Renovation', startDate:'2025-06-01', emi:5000, paidCount:12, createdAt:'2025-06-01' },
+  { id:'L003', type:'given', status:'closed',
+    contact:{name:'Vikram Singh',phone:'99887 76655',email:'',notes:'Medical emergency. Fully settled.'},
+    principal:25000, interestRate:0, interestType:'none', tenure:6, frequency:'monthly',
+    purpose:'Medical Emergency', startDate:'2025-01-01', emi:4167, paidCount:6, createdAt:'2025-01-01' },
+  { id:'L004', type:'taken', status:'overdue',
+    contact:{name:'Ananya Kapoor',phone:'97654 32109',email:'a.kapoor@work.in',notes:'Vehicle purchase. Payments have been irregular.'},
+    principal:75000, interestRate:15, interestType:'reducing', tenure:18, frequency:'monthly',
+    purpose:'Vehicle Purchase', startDate:'2025-10-01', emi:4683, paidCount:4, createdAt:'2025-10-01' },
+];
+
+const INIT_TX = [
+  {id:'T001',loanId:'L001',date:'2026-01-01',amount:4442,mode:'UPI',type:'received',notes:'January EMI',inst:1},
+  {id:'T002',loanId:'L001',date:'2026-02-01',amount:4442,mode:'UPI',type:'received',notes:'February EMI',inst:2},
+  {id:'T003',loanId:'L001',date:'2026-03-04',amount:4442,mode:'Bank Transfer',type:'received',notes:'March EMI (4 days late)',inst:3},
+  {id:'T004',loanId:'L001',date:'2026-04-01',amount:4442,mode:'UPI',type:'received',notes:'April EMI',inst:4},
+  {id:'T005',loanId:'L001',date:'2026-05-01',amount:4442,mode:'Cash',type:'received',notes:'May EMI',inst:5},
+  {id:'T006',loanId:'L001',date:'2026-06-02',amount:4442,mode:'UPI',type:'received',notes:'June EMI',inst:6},
+  {id:'T007',loanId:'L002',date:'2025-07-01',amount:5000,mode:'Bank Transfer',type:'paid',notes:'July EMI',inst:1},
+  {id:'T008',loanId:'L002',date:'2025-08-01',amount:5000,mode:'Bank Transfer',type:'paid',notes:'August EMI',inst:2},
+  {id:'T009',loanId:'L002',date:'2025-09-01',amount:5000,mode:'Bank Transfer',type:'paid',notes:'September EMI',inst:3},
+  {id:'T010',loanId:'L002',date:'2025-10-01',amount:5000,mode:'Bank Transfer',type:'paid',notes:'October EMI',inst:4},
+  {id:'T011',loanId:'L002',date:'2025-11-01',amount:5000,mode:'UPI',type:'paid',notes:'November EMI',inst:5},
+  {id:'T012',loanId:'L002',date:'2025-12-01',amount:5000,mode:'Bank Transfer',type:'paid',notes:'December EMI',inst:6},
+  {id:'T013',loanId:'L002',date:'2026-01-01',amount:5000,mode:'Bank Transfer',type:'paid',notes:'January EMI',inst:7},
+  {id:'T014',loanId:'L002',date:'2026-02-01',amount:5000,mode:'UPI',type:'paid',notes:'February EMI',inst:8},
+  {id:'T015',loanId:'L002',date:'2026-03-01',amount:5000,mode:'Bank Transfer',type:'paid',notes:'March EMI',inst:9},
+  {id:'T016',loanId:'L002',date:'2026-04-01',amount:5000,mode:'Bank Transfer',type:'paid',notes:'April EMI',inst:10},
+  {id:'T017',loanId:'L002',date:'2026-05-01',amount:5000,mode:'UPI',type:'paid',notes:'May EMI',inst:11},
+  {id:'T018',loanId:'L002',date:'2026-06-01',amount:5000,mode:'Bank Transfer',type:'paid',notes:'June EMI',inst:12},
+  {id:'T019',loanId:'L003',date:'2025-02-01',amount:4167,mode:'Cash',type:'received',notes:'February EMI',inst:1},
+  {id:'T020',loanId:'L003',date:'2025-03-01',amount:4167,mode:'Cash',type:'received',notes:'March EMI',inst:2},
+  {id:'T021',loanId:'L003',date:'2025-04-01',amount:4167,mode:'UPI',type:'received',notes:'April EMI',inst:3},
+  {id:'T022',loanId:'L003',date:'2025-05-01',amount:4167,mode:'UPI',type:'received',notes:'May EMI',inst:4},
+  {id:'T023',loanId:'L003',date:'2025-06-01',amount:4167,mode:'Cash',type:'received',notes:'June EMI',inst:5},
+  {id:'T024',loanId:'L003',date:'2025-07-01',amount:4165,mode:'Cash',type:'received',notes:'July EMI — final',inst:6},
+  {id:'T025',loanId:'L004',date:'2025-11-01',amount:4683,mode:'Bank Transfer',type:'paid',notes:'November EMI',inst:1},
+  {id:'T026',loanId:'L004',date:'2025-12-01',amount:4683,mode:'Bank Transfer',type:'paid',notes:'December EMI',inst:2},
+  {id:'T027',loanId:'L004',date:'2026-01-04',amount:4683,mode:'UPI',type:'paid',notes:'January EMI (late)',inst:3},
+  {id:'T028',loanId:'L004',date:'2026-02-06',amount:4683,mode:'UPI',type:'paid',notes:'February EMI (late)',inst:4},
+];
+
+const INIT_EXP = [
+  {id:'E001',date:'2026-06-15',category:'Transport',amount:850,notes:'Uber rides (work week)'},
+  {id:'E002',date:'2026-06-10',category:'Food',amount:2400,notes:'Office lunch — 10 days'},
+  {id:'E003',date:'2026-06-05',category:'Medical',amount:1200,notes:'Doctor consult + medicines'},
+  {id:'E004',date:'2026-05-28',category:'Utilities',amount:3500,notes:'Electricity + internet bills'},
+  {id:'E005',date:'2026-05-20',category:'Entertainment',amount:600,notes:'OTT subscriptions'},
+  {id:'E006',date:'2026-05-15',category:'Food',amount:1800,notes:'Monthly groceries'},
+];
+
+// ── STATE ──────────────────────────────────────────────────────────
+const S = {
+  page: 'dashboard',
+  selLoanId: null,
+  loanTab: 'overview',
+  loanFilter: 'all',
+  loanSearch: '',
+  txFilter: 'all',
+  modal: null,
+  mData: {},
+  loans: JSON.parse(JSON.stringify(INIT_LOANS)),
+  tx: JSON.parse(JSON.stringify(INIT_TX)),
+  exp: JSON.parse(JSON.stringify(INIT_EXP)),
+  wiz: {
+    step: 1, errors: {},
+    data: { type:'', cName:'', cPhone:'', cEmail:'', cNotes:'',
+      principal:'', startDate:'2026-06-22', purpose:'',
+      iType:'reducing', iRate:'', freq:'monthly', tenure:'' }
+  }
+};
+
+// ── UTILS ──────────────────────────────────────────────────────────
+const fmt = n => '₹' + Math.abs(Math.round(n)).toLocaleString('en-IN');
+const fmtD = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+const fmtDs = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '—';
+const TODAY = () => '2026-06-22';
+const uid = () => (Math.random()*1e9|0).toString(36).toUpperCase();
+
+function addMonths(dStr, n) {
+  const d = new Date(dStr); d.setMonth(d.getMonth() + n);
+  return d.toISOString().slice(0,10);
+}
+function getLoan(id){ return S.loans.find(l => l.id === id); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+// ── CALCULATIONS ───────────────────────────────────────────────────
+function calcEMI(principal, rate, tenure, iType, iPeriod='year', iFixedAmt=0) {
+  principal = +principal; rate = +rate; tenure = +tenure; iFixedAmt = +iFixedAmt;
+  if(!principal || !tenure) return 0;
+  // Normalize to annual rate
+  const rA = iPeriod==='month'?rate*12:iPeriod==='week'?rate*52:iPeriod==='day'?rate*365:rate;
+  const r = rA / 100 / 12; // monthly rate
+  if(iType === 'none' || rA === 0) return Math.round(principal / tenure);
+  if(iType === 'fixed_amount') return Math.round((principal + iFixedAmt) / tenure);
+  if(iType === 'flat') return Math.round((principal + principal * (rA/100) * (tenure/12)) / tenure);
+  if(iType === 'compound') return Math.round(principal * Math.pow(1 + rA/100, tenure/12) / tenure);
+  if(r === 0) return Math.round(principal/tenure);
+  const pow = Math.pow(1+r, tenure);
+  return Math.round(principal * r * pow / (pow - 1));
+}
+
+function calcOutstanding(loan) {
+  if(loan.paidCount >= loan.tenure) return 0;
+  if(loan.paidCount === 0) return loan.principal;
+  let bal = loan.principal;
+  const ip = loan.interestPeriod||'year';
+  const rA = ip==='month'?loan.interestRate*12:ip==='week'?loan.interestRate*52:ip==='day'?loan.interestRate*365:loan.interestRate;
+  const r = rA / 100 / 12;
+  for(let i = 0; i < loan.paidCount; i++) {
+    if(loan.interestType === 'reducing' || loan.interestType === 'compound') {
+      bal -= (loan.emi - bal * r);
+    } else {
+      bal -= loan.principal / loan.tenure;
+    }
+  }
+  return Math.max(0, Math.round(bal));
+}
+
+function calcInterestPaid(loan) {
+  if(!loan.paidCount || loan.interestType === 'none') return 0;
+  if(loan.interestType === 'fixed_amount')
+    return Math.round((loan.interestFixedAmt||0) / loan.tenure * loan.paidCount);
+  const ip = loan.interestPeriod||'year';
+  const rA = ip==='month'?loan.interestRate*12:ip==='week'?loan.interestRate*52:ip==='day'?loan.interestRate*365:loan.interestRate;
+  const r = rA / 100 / 12;
+  if(loan.interestType === 'flat') {
+    return Math.round(loan.principal * (rA/100) * (loan.tenure/12) / loan.tenure * loan.paidCount);
+  }
+  let bal = loan.principal, intTotal = 0;
+  for(let i = 0; i < loan.paidCount; i++) {
+    const int = bal * r;
+    intTotal += int;
+    bal -= (loan.emi - int);
+  }
+  return Math.round(intTotal);
+}
+
+function calcTotalInterest(loan) {
+  const iType = loan.interestType;
+  if(iType === 'none') return 0;
+  if(iType === 'fixed_amount') return +(loan.interestFixedAmt||0);
+  if(!loan.interestRate) return 0;
+  const ip = loan.interestPeriod||'year';
+  const rA = ip==='month'?loan.interestRate*12:ip==='week'?loan.interestRate*52:ip==='day'?loan.interestRate*365:loan.interestRate;
+  if(iType === 'flat') return Math.round(loan.principal * (rA/100) * (loan.tenure/12));
+  if(iType === 'compound') return Math.round(loan.principal * Math.pow(1 + rA/100, loan.tenure/12) - loan.principal);
+  return Math.max(0, Math.round(loan.emi * loan.tenure - loan.principal));
+}
+
+function generateSchedule(loan) {
+  let bal = loan.principal;
+  const ip = loan.interestPeriod||'year';
+  const rA = ip==='month'?loan.interestRate*12:ip==='week'?loan.interestRate*52:ip==='day'?loan.interestRate*365:loan.interestRate;
+  const r = rA / 100 / 12;
+  return Array.from({length: loan.tenure}, (_,i) => {
+    let int = 0, prin = 0;
+    if((loan.interestType === 'reducing' || loan.interestType === 'compound') && r) {
+      int = bal * r; prin = loan.emi - int;
+    } else if(loan.interestType === 'flat' && loan.interestRate) {
+      int = loan.principal * (rA/100) * (loan.tenure/12) / loan.tenure;
+      prin = loan.principal / loan.tenure;
+    } else if(loan.interestType === 'fixed_amount') {
+      int = (loan.interestFixedAmt||0) / loan.tenure;
+      prin = loan.principal / loan.tenure;
+    } else { prin = loan.emi; }
+    bal = Math.max(0, bal - prin);
+    const due = addMonths(loan.startDate, i+1);
+    const no = i+1;
+    const status = no <= loan.paidCount ? 'paid' : due < TODAY() ? 'overdue' : 'upcoming';
+    return {no, due, emi:Math.round(loan.emi), prin:Math.round(prin), int:Math.round(int), bal:Math.round(bal), status};
+  });
+}
+
+function getNextEMI(loan) {
+  if(loan.status === 'closed') return null;
+  const next = loan.paidCount + 1;
+  if(next > loan.tenure) return null;
+  return addMonths(loan.startDate, next);
+}
+
+function dashStats() {
+  const gA = S.loans.filter(l => l.type==='given' && l.status!=='closed');
+  const tA = S.loans.filter(l => l.type==='taken' && l.status!=='closed');
+  return {
+    moneyGiven: gA.reduce((s,l) => s+l.principal, 0),
+    moneyTaken: tA.reduce((s,l) => s+l.principal, 0),
+    receivable: gA.reduce((s,l) => s+calcOutstanding(l), 0),
+    payable: tA.reduce((s,l) => s+calcOutstanding(l), 0),
+    intEarned: S.loans.filter(l=>l.type==='given').reduce((s,l) => s+calcInterestPaid(l), 0),
+    intPaid: S.loans.filter(l=>l.type==='taken').reduce((s,l) => s+calcInterestPaid(l), 0),
+  };
+}
+
+// ── NAVIGATION ─────────────────────────────────────────────────────
+function navigate(page, opts={}) {
+  S.page = page;
+  if(opts.id) S.selLoanId = opts.id;
+  if(opts.tab) S.loanTab = opts.tab;
+  if(page==='newLoan') {
+    S.wiz = { step:1, errors:{}, data:{
+      type:'',cName:'',cPhone:'',cEmail:'',cNotes:'',
+      principal:'',startDate:'2026-06-22',purpose:'',
+      iType:'reducing',iPeriod:'year',iRate:'',iFixedAmt:'',
+      iCollection:'with_emi',
+      latePenalty:'none',latePenaltyVal:'',gracedays:'3',
+      prepayment:'allowed',prepaymentPct:'',
+      freq:'monthly',tenure:''
+    }};
+  }
+  S.modal = null; S.mData = {};
+  render();
+  window.scrollTo(0,0);
+}
+
+function render() {
+  document.getElementById('page-root').innerHTML = getPage();
+  document.getElementById('modal-root').innerHTML = S.modal ? getModal() : '';
+  document.querySelectorAll('[data-nav]').forEach(el => {
+    const p = el.dataset.nav;
+    el.classList.toggle('active',
+      p === S.page ||
+      (p==='loans' && (S.page==='loanDetail'||S.page==='newLoan'))
+    );
+  });
+}
+
+function getPage() {
+  switch(S.page) {
+    case 'dashboard':   return pgDashboard();
+    case 'loans':       return pgLoans();
+    case 'newLoan':     return pgNewLoan();
+    case 'loanDetail':  return pgLoanDetail();
+    case 'transactions':return pgTransactions();
+    case 'expenses':    return pgExpenses();
+    case 'reports':     return pgReports();
+    case 'settings':    return pgSettings();
+    default:            return pgDashboard();
+  }
+}
+
+// ── TOPBAR HELPER ──────────────────────────────────────────────────
+function topbar(title, actions='', back='') {
+  return '<div class="topbar"><div class="topbar-title">' +
+    (back ? '<button class="topbar-back" onclick="navigate(\''+back+'\')" title="Back"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>' : '') +
+    title + '</div><div class="topbar-actions">' + actions + '</div></div>';
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────────────
+function pgDashboard() {
+  const ds = dashStats();
+  const recentTx = [...S.tx].sort((a,b) => b.date.localeCompare(a.date)).slice(0,5);
+  const overdue = S.loans.filter(l => l.status==='overdue');
+  const upcoming = S.loans.filter(l => l.status==='active').map(l => {
+    const d = getNextEMI(l); return d ? {loan:l, date:d} : null;
+  }).filter(Boolean).sort((a,b) => a.date.localeCompare(b.date)).slice(0,4);
+
+  return topbar('Dashboard') + '<div class="content">' +
+    '<div class="stat-grid">' +
+    statCard('sc-green','Money Given',ds.moneyGiven,S.loans.filter(l=>l.type==='given'&&l.status!=='closed').length+' active loans') +
+    statCard('sc-red','Money Taken',ds.moneyTaken,S.loans.filter(l=>l.type==='taken'&&l.status!=='closed').length+' active loans') +
+    statCard('sc-amber','Receivable',ds.receivable,'Outstanding from borrowers') +
+    statCard('sc-blue','Payable',ds.payable,'Outstanding to lenders') +
+    statCard('sc-green','Interest Earned',ds.intEarned,'From loans given') +
+    statCard('sc-red','Interest Paid',ds.intPaid,'On loans taken') +
+    '</div>' +
+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">' +
+
+    // Upcoming EMIs
+    '<div class="card"><div class="card-hd"><h3>Upcoming EMIs</h3><span class="text-sm text-muted">Next 30 days</span></div>' +
+    (upcoming.length === 0
+      ? '<div class="empty-state" style="padding:24px"><div class="es-icon">✅</div><p class="text-muted text-sm">No EMIs in next 30 days</p></div>'
+      : '<div class="card-bd" style="padding:0">' +
+        upcoming.map(u => {
+          const loan = u.loan;
+          return '<div style="padding:10px 16px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center">' +
+            '<div><div style="font-size:13px;font-weight:600">' + esc(loan.contact.name) + '</div>' +
+            '<div class="text-sm text-muted">' + fmtDs(u.date) + ' · ' + (loan.type==='given'?'Collect':'Pay') + '</div></div>' +
+            '<div style="font-family:var(--fm);font-size:13px;font-weight:700;color:' + (loan.type==='given'?'var(--green)':'var(--red)') + '">' + fmt(loan.emi) + '</div>' +
+            '</div>';
+        }).join('') + '</div>'
+    ) + '</div>' +
+
+    // Overdue
+    '<div class="card"><div class="card-hd"><h3>Overdue Loans</h3>' +
+    (overdue.length ? '<span class="badge b-overdue">'+overdue.length+'</span>' : '') +
+    '</div>' +
+    (overdue.length === 0
+      ? '<div class="empty-state" style="padding:24px"><div class="es-icon">🎉</div><p class="text-muted text-sm">No overdue loans</p></div>'
+      : '<div class="card-bd" style="padding:0">' +
+        overdue.map(l => {
+          const outstanding = calcOutstanding(l);
+          const missedCount = generateSchedule(l).filter(r => r.status==='overdue').length;
+          return '<div style="padding:10px 16px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="navigate(\'loanDetail\',{id:\''+l.id+'\'})">' +
+            '<div><div style="font-size:13px;font-weight:600">' + esc(l.contact.name) + '</div>' +
+            '<div class="text-sm text-muted">' + missedCount + ' missed EMI' + (missedCount>1?'s':'') + '</div></div>' +
+            '<div style="text-align:right"><div style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--red)">' + fmt(outstanding) + '</div>' +
+            '<div class="text-sm text-muted">outstanding</div></div>' +
+            '</div>';
+        }).join('') + '</div>'
+    ) + '</div></div>' +
+
+    // Recent activity
+    '<div class="card"><div class="card-hd"><h3>Recent Activity</h3><button class="btn btn-ghost btn-sm" onclick="navigate(\'transactions\')">View all</button></div>' +
+    '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Contact</th><th>Loan</th><th class="td-r">Amount</th><th>Mode</th></tr></thead><tbody>' +
+    recentTx.map(t => {
+      const loan = getLoan(t.loanId);
+      if(!loan) return '';
+      return '<tr><td class="text-sm text-muted">' + fmtDs(t.date) + '</td>' +
+        '<td class="td-name">' + esc(loan.contact.name) + '</td>' +
+        '<td><span class="badge '+(loan.type==='given'?'b-given':'b-taken')+'">'+(loan.type==='given'?'Given':'Taken')+'</span></td>' +
+        '<td class="td-mono td-r '+(t.type==='received'?'text-green':'text-red')+'">' +
+        (t.type==='received'?'+':'-') + fmt(t.amount) + '</td>' +
+        '<td class="text-sm text-muted">'+esc(t.mode)+'</td></tr>';
+    }).join('') +
+    '</tbody></table></div></div>' +
+    '</div>';
+}
+
+function statCard(cls, label, value, sub) {
+  return '<div class="stat-card '+cls+'"><div class="stat-lbl">'+label+'</div><div class="stat-val">'+fmt(value)+'</div><div class="stat-sub">'+sub+'</div></div>';
+}
+
+// ── LOANS LIST ─────────────────────────────────────────────────────
+function pgLoans() {
+  const filters = ['all','given','taken','active','overdue','closed'];
+  let loans = S.loans;
+  if(S.loanFilter !== 'all') loans = loans.filter(l =>
+    l.type === S.loanFilter || l.status === S.loanFilter
+  );
+  if(S.loanSearch) loans = loans.filter(l =>
+    l.contact.name.toLowerCase().includes(S.loanSearch.toLowerCase()) ||
+    l.purpose.toLowerCase().includes(S.loanSearch.toLowerCase())
+  );
+
+  const chips = filters.map(f =>
+    '<button class="chip '+(S.loanFilter===f?'active':'')+'" onclick="setLoanFilter(\''+f+'\')">' +
+    f.charAt(0).toUpperCase()+f.slice(1)+'</button>'
+  ).join('');
+
+  const rows = loans.map(l => {
+    const outstanding = calcOutstanding(l);
+    const nextDate = getNextEMI(l);
+    const pct = l.status==='closed' ? 100 : Math.round((l.paidCount/l.tenure)*100);
+    return '<tr>' +
+      '<td><div class="td-name">' + esc(l.contact.name) + '</div>' +
+      '<div class="text-sm text-muted">' + esc(l.purpose) + '</div></td>' +
+      '<td><span class="badge '+(l.type==='given'?'b-given':'b-taken')+'">'+(l.type==='given'?'↑ Given':'↓ Taken')+'</span></td>' +
+      '<td class="td-mono">' + fmt(l.principal) + '</td>' +
+      '<td class="td-mono '+(outstanding>0?'text-red':'text-green')+'">' + fmt(outstanding) + '</td>' +
+      '<td><div class="text-sm">' + (nextDate ? fmtDs(nextDate) : '—') + '</div>' +
+      '<div class="prog-bar" style="width:60px"><div class="prog-fill" style="width:'+pct+'%;background:var(--accent)"></div></div></td>' +
+      '<td><span class="badge b-'+l.status+'">'+l.status.charAt(0).toUpperCase()+l.status.slice(1)+'</span></td>' +
+      '<td><button class="btn btn-ghost btn-sm" onclick="navigate(\'loanDetail\',{id:\''+l.id+'\'})">View →</button></td>' +
+      '</tr>';
+  }).join('');
+
+  return topbar('Loans', '<button class="btn btn-primary" onclick="navigate(\'newLoan\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Loan</button>') +
+    '<div class="content">' +
+    '<div class="row-between mb-4">' +
+    '<div class="filter-row" style="margin-bottom:0">' + chips + '</div>' +
+    '<div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="fc" id="loan-search" type="text" placeholder="Search by name..." value="'+esc(S.loanSearch)+'" oninput="S.loanSearch=this.value;render()"></div>' +
+    '</div>' +
+    '<div class="card"><div class="tbl-wrap">' +
+    (rows ? '<table><thead><tr><th>Contact</th><th>Type</th><th>Principal</th><th>Outstanding</th><th>Progress</th><th>Status</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>'
+      : '<div class="empty-state"><div class="es-icon">📋</div><h3 class="es-title">No loans found</h3><p class="es-sub">Try adjusting your filter or create a new loan.</p><button class="btn btn-primary" onclick="navigate(\'newLoan\')">Create Loan</button></div>') +
+    '</div></div></div>';
+}
+
+function setLoanFilter(f) { S.loanFilter = f; render(); }
+
+// ── WIZARD ─────────────────────────────────────────────────────────
+function pgNewLoan() {
+  const {step, data, errors} = S.wiz;
+  const steps = ['Type','Contact','Details','Interest','Repayment','Review'];
+  const prog = steps.map((s,i) => {
+    const n = i+1;
+    const cls = n < step ? 'done' : n === step ? 'active' : 'pending';
+    return '<div class="wz-step">' +
+      (i>0 ? '<div class="wz-line '+(n<=step?'done':'')+'"></div>' : '') +
+      '<div class="wz-dot '+cls+'" title="'+s+'">' + (n < step ? '✓' : n) + '</div>' +
+      '</div>';
+  }).join('');
+
+  const topButtons = step > 1 && step < 7
+    ? '<button class="btn btn-outline btn-sm" onclick="wizBack()">← Back</button>'
+    : '<button class="btn btn-ghost btn-sm" onclick="navigate(\'loans\')">Cancel</button>';
+
+  let body = '';
+  if(step === 7) {
+    // Success
+    const loan = S.loans[S.loans.length-1];
+    body = '<div class="wz-head"><div class="wz-eyebrow">Complete</div><div class="wz-title">Loan Created!</div><div class="wz-sub">Your loan has been saved to LoanBook.</div></div>' +
+      '<div class="wz-body" style="text-align:center;padding-bottom:28px">' +
+      '<div style="font-size:48px;margin:16px 0">✅</div>' +
+      '<div style="font-family:var(--fm);font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px">'+fmt(loan.principal)+'</div>' +
+      '<div class="text-muted text-sm">'+loan.type.charAt(0).toUpperCase()+loan.type.slice(1)+' to '+esc(loan.contact.name)+'</div>' +
+      '<div style="display:flex;gap:10px;justify-content:center;margin-top:22px">' +
+      '<button class="btn btn-primary" onclick="navigate(\'loanDetail\',{id:\''+loan.id+'\'})">View Loan →</button>' +
+      '<button class="btn btn-outline" onclick="navigate(\'newLoan\')">Create Another</button>' +
+      '</div></div>';
+    return topbar('Create Loan','','')+
+      '<div class="content"><div class="wz-wrap"><div class="wz-prog">'+prog+'</div><div class="wz-card">'+body+'</div></div></div>';
+  }
+
+  if(step === 1) {
+    body = '<div class="opt-grid opt-grid-2">' +
+      '<div class="opt-card '+(data.type==='given'?'sel':'')+'" onclick="wizSel(\'type\',\'given\')">' +
+      '<div class="opt-icon">💰</div><div class="opt-title">Given Loan</div>' +
+      '<div class="opt-desc">Money you lent to someone. You will collect repayments.</div></div>' +
+      '<div class="opt-card '+(data.type==='taken'?'sel':'')+'" onclick="wizSel(\'type\',\'taken\')">' +
+      '<div class="opt-icon">🏦</div><div class="opt-title">Taken Loan</div>' +
+      '<div class="opt-desc">Money you borrowed from someone. You will make repayments.</div></div>' +
+      '</div>' + (errors.type ? '<div class="form-err mt-3">'+errors.type+'</div>' : '');
+  } else if(step === 2) {
+    body = '<div class="fg"><label>Full Name <span style="color:var(--red)">*</span></label>' +
+      '<input class="fc '+(errors.cName?'err':'')+'" data-wf="cName" value="'+esc(data.cName)+'" placeholder="e.g. Rahul Sharma" oninput="S.wiz.data.cName=this.value">' +
+      (errors.cName?'<div class="form-err">'+errors.cName+'</div>':'') + '</div>' +
+      '<div class="form-row">' +
+      '<div class="fg"><label>Phone</label><input class="fc" data-wf="cPhone" value="'+esc(data.cPhone)+'" placeholder="98765 43210" oninput="S.wiz.data.cPhone=this.value"></div>' +
+      '<div class="fg"><label>Email</label><input class="fc" data-wf="cEmail" value="'+esc(data.cEmail)+'" placeholder="name@email.com" oninput="S.wiz.data.cEmail=this.value"></div>' +
+      '</div>' +
+      '<div class="fg"><label>Notes</label><textarea class="fc" data-wf="cNotes" rows="2" placeholder="Any notes about this person…" oninput="S.wiz.data.cNotes=this.value">'+esc(data.cNotes)+'</textarea></div>';
+  } else if(step === 3) {
+    body = '<div class="form-row">' +
+      '<div class="fg"><label>Principal Amount (₹) <span style="color:var(--red)">*</span></label>' +
+      '<input class="fc '+(errors.principal?'err':'')+'" data-wf="principal" type="number" min="1" value="'+esc(data.principal)+'" placeholder="50000" oninput="S.wiz.data.principal=this.value">' +
+      (errors.principal?'<div class="form-err">'+errors.principal+'</div>':'') + '</div>' +
+      '<div class="fg"><label>Start Date <span style="color:var(--red)">*</span></label>' +
+      '<input class="fc" data-wf="startDate" type="date" value="'+esc(data.startDate)+'" onchange="S.wiz.data.startDate=this.value"></div>' +
+      '</div>' +
+      '<div class="fg"><label>Purpose</label><input class="fc" data-wf="purpose" value="'+esc(data.purpose)+'" placeholder="e.g. Business, Medical, Personal" oninput="S.wiz.data.purpose=this.value"></div>';
+  } else if(step === 4) {
+    const hasRate = data.iType !== 'none' && data.iType !== 'fixed_amount';
+    const showFixed = data.iType === 'fixed_amount';
+    body =
+      '<div class="section-label">Interest Method</div>' +
+      '<div class="opt-grid" style="gap:7px;margin-bottom:16px">' +
+      optRow('iType','none',data.iType,'No Interest','Simple return of principal only, no charges') +
+      optRow('iType','fixed_amount',data.iType,'Fixed Amount','Specify a flat interest amount (e.g. ₹500 total)') +
+      optRow('iType','flat',data.iType,'Flat Rate %','Calculated on full principal for entire term') +
+      optRow('iType','reducing',data.iType,'Reducing Balance %','On outstanding balance — standard EMI method') +
+      optRow('iType','compound',data.iType,'Compound Interest','Interest on principal + accumulated unpaid interest') +
+      '</div>' +
+      (showFixed ?
+        '<div class="fg"><label>Total Interest Amount (₹) <span style="color:var(--red)">*</span></label>' +
+        '<input class="fc '+(errors.iRate?'err':'')+'" type="number" min="0" value="'+esc(data.iFixedAmt)+'" placeholder="500" oninput="S.wiz.data.iFixedAmt=this.value">' +
+        (errors.iRate?'<div class="form-err">'+errors.iRate+'</div>':'<div class="form-hint">Split equally across all installments.</div>') +
+        '</div>' : '') +
+      (hasRate ?
+        '<div class="form-row" style="margin-bottom:14px">' +
+        '<div class="fg"><label>Interest Rate <span style="color:var(--red)">*</span></label>' +
+        '<input class="fc '+(errors.iRate?'err':'')+'" type="number" min="0" step="0.01" value="'+esc(data.iRate)+'" placeholder="12" oninput="S.wiz.data.iRate=this.value">' +
+        (errors.iRate?'<div class="form-err">'+errors.iRate+'</div>':'') + '</div>' +
+        '<div class="fg"><label>Rate Period</label>' +
+        '<select class="fc" onchange="S.wiz.data.iPeriod=this.value">' +
+        ['day','week','month','year'].map(p=>'<option value="'+p+'" '+(data.iPeriod===p?'selected':'')+'>Per '+p.charAt(0).toUpperCase()+p.slice(1)+'</option>').join('') +
+        '</select></div></div>' : '') +
+      (data.iType !== 'none' ?
+        '<div class="section-label">Interest Collection Timing</div>' +
+        '<div class="opt-grid" style="gap:7px;margin-bottom:16px">' +
+        optRow('iCollection','with_emi',data.iCollection,'With Each EMI','Interest included in every installment (standard)') +
+        optRow('iCollection','upfront',data.iCollection,'Upfront','Full interest charged at disbursement') +
+        optRow('iCollection','at_end',data.iCollection,'At End (Balloon)','Interest payable together with final repayment') +
+        '</div>' : '') +
+      '<div class="section-label">Late Payment Penalty</div>' +
+      '<div class="opt-grid" style="gap:7px;margin-bottom:'+(data.latePenalty!=='none'?'10px':'16px')+'">' +
+      optRow('latePenalty','none',data.latePenalty,'No Penalty','No charges for delayed payments') +
+      optRow('latePenalty','fixed',data.latePenalty,'Fixed Amount','Fixed fee per late installment') +
+      optRow('latePenalty','pct_month',data.latePenalty,'% Per Month','Percentage of outstanding per month overdue') +
+      '</div>' +
+      (data.latePenalty !== 'none' ?
+        '<div class="form-row" style="margin-bottom:14px">' +
+        '<div class="fg"><label>'+(data.latePenalty==='fixed'?'Penalty Amount (₹)':'Penalty Rate (% / month)')+'</label>' +
+        '<input class="fc" type="number" min="0" step="0.1" value="'+esc(data.latePenaltyVal)+'" placeholder="'+(data.latePenalty==='fixed'?'200':'2')+'" oninput="S.wiz.data.latePenaltyVal=this.value"></div>' +
+        '<div class="fg"><label>Grace Period (days)</label>' +
+        '<input class="fc" type="number" min="0" value="'+esc(data.gracedays)+'" placeholder="3" oninput="S.wiz.data.gracedays=this.value">' +
+        '<div class="form-hint">Days before penalty kicks in.</div></div>' +
+        '</div>' : '') +
+      '<div class="section-label">Early Repayment</div>' +
+      '<div class="opt-grid" style="gap:7px">' +
+      optRow('prepayment','allowed',data.prepayment,'Freely Allowed','Borrower can repay early at any time') +
+      optRow('prepayment','with_penalty',data.prepayment,'With Penalty','Early repayment incurs a fee') +
+      optRow('prepayment','not_allowed',data.prepayment,'Not Allowed','Full term must be completed') +
+      '</div>' +
+      (data.prepayment === 'with_penalty' ?
+        '<div class="fg" style="margin-top:10px"><label>Prepayment Penalty (%)</label>' +
+        '<input class="fc" type="number" min="0" step="0.1" value="'+esc(data.prepaymentPct)+'" placeholder="2" oninput="S.wiz.data.prepaymentPct=this.value">' +
+        '<div class="form-hint">% of outstanding principal charged as penalty.</div></div>' : '');
+  } else if(step === 5) {
+    const emi = (data.principal && data.tenure)
+      ? calcEMI(data.principal, data.iRate||0, data.tenure, data.iType, data.iPeriod, data.iFixedAmt) : 0;
+    const totalInt = (data.principal && data.tenure)
+      ? calcTotalInterest({principal:+data.principal,interestRate:+(data.iRate||0),interestType:data.iType,
+          interestPeriod:data.iPeriod,interestFixedAmt:+(data.iFixedAmt||0),tenure:+data.tenure,emi})
+      : 0;
+    body = '<div class="opt-grid" style="gap:8px;margin-bottom:14px">' +
+      optRow('freq','monthly',data.freq,'Monthly','Standard monthly EMI schedule') +
+      optRow('freq','weekly',data.freq,'Weekly','Weekly repayment schedule') +
+      optRow('freq','one_time',data.freq,'One Time','Lump-sum repayment at the end') +
+      '</div>' +
+      (data.freq !== 'one_time'
+        ? '<div class="fg"><label>Tenure <span style="color:var(--red)">*</span> <span class="text-muted">(months)</span></label>' +
+          '<input class="fc '+(errors.tenure?'err':'')+'" data-wf="tenure" type="number" min="1" value="'+esc(data.tenure)+'" placeholder="12" oninput="S.wiz.data.tenure=this.value">' +
+          (errors.tenure?'<div class="form-err">'+errors.tenure+'</div>':'') + '</div>'
+        : '<input type="hidden" data-wf="tenure" value="1">'
+      ) +
+      (emi ? '<div class="computed-box"><div class="cb-label">Calculated</div><div class="cb-grid">' +
+        '<div class="cb-item"><div class="cbi-lbl">EMI</div><div class="cbi-val">'+fmt(emi)+'</div></div>' +
+        '<div class="cb-item"><div class="cbi-lbl">Total Interest</div><div class="cbi-val">'+fmt(totalInt)+'</div></div>' +
+        '<div class="cb-item"><div class="cbi-lbl">Total Payable</div><div class="cbi-val">'+fmt(+data.principal+totalInt)+'</div></div>' +
+        '</div></div>' : '');
+  } else if(step === 6) {
+    const emi = calcEMI(data.principal, data.iRate||0, data.tenure||1, data.iType, data.iPeriod, data.iFixedAmt);
+    const totalInt = calcTotalInterest({principal:+data.principal,interestRate:+(data.iRate||0),interestType:data.iType,
+      interestPeriod:data.iPeriod,interestFixedAmt:+(data.iFixedAmt||0),tenure:+(data.tenure||1),emi});
+    const iMap = {none:'No Interest',fixed_amount:'Fixed Amount',flat:'Flat Rate',reducing:'Reducing Balance',compound:'Compound'};
+    const pMap = {day:'per day',week:'per week',month:'per month',year:'per year'};
+    const cMap = {with_emi:'With each EMI',upfront:'Upfront (at disbursement)',at_end:'At end (balloon)'};
+    const lpMap = {none:'No penalty',
+      fixed:'Fixed '+fmt(data.latePenaltyVal||0)+' / late payment',
+      pct_month:(data.latePenaltyVal||'?')+'% per month'};
+    const ppMap = {allowed:'Freely allowed',
+      with_penalty:'With penalty ('+(data.prepaymentPct||'?')+'%)',
+      not_allowed:'Not allowed'};
+    const fMap = {monthly:'Monthly',weekly:'Weekly',one_time:'One Time'};
+    body = '<div class="rv-block"><div class="rv-head">Contact</div>' +
+      rvRow('Name', data.cName) +
+      (data.cPhone ? rvRow('Phone',data.cPhone) : '') +
+      (data.cEmail ? rvRow('Email',data.cEmail) : '') +
+      '</div>' +
+      '<div class="rv-block"><div class="rv-head">Loan Details</div>' +
+      rvRow('Type', data.type==='given'?'Given (you lend)':'Taken (you borrow)') +
+      rvRow('Principal','<span class="rv mono">'+fmt(data.principal)+'</span>',true) +
+      rvRow('Purpose', data.purpose||'—') +
+      rvRow('Start Date', fmtD(data.startDate)) +
+      '</div>' +
+      '<div class="rv-block"><div class="rv-head">Interest</div>' +
+      rvRow('Method', iMap[data.iType]) +
+      (data.iType==='fixed_amount' ? rvRow('Fixed Interest', fmt(data.iFixedAmt||0)) : '') +
+      (data.iType!=='none'&&data.iType!=='fixed_amount' ? rvRow('Rate', data.iRate+'% '+pMap[data.iPeriod]) : '') +
+      (data.iType!=='none' ? rvRow('Collection', cMap[data.iCollection]) : '') +
+      '</div>' +
+      '<div class="rv-block"><div class="rv-head">Repayment</div>' +
+      rvRow('Schedule', fMap[data.freq]) +
+      (data.freq!=='one_time' ? rvRow('Tenure', data.tenure+' months') : '') +
+      rvRow('EMI','<span class="rv mono">'+fmt(emi)+'</span>',true) +
+      rvRow('Total Interest','<span class="rv mono">'+fmt(totalInt)+'</span>',true) +
+      rvRow('Total Payable','<span class="rv mono">'+fmt(+data.principal+totalInt)+'</span>',true) +
+      '</div>' +
+      '<div class="rv-block"><div class="rv-head">Terms</div>' +
+      rvRow('Late Payment', lpMap[data.latePenalty]) +
+      (data.latePenalty!=='none'&&data.gracedays ? rvRow('Grace Period', data.gracedays+' days') : '') +
+      rvRow('Early Repayment', ppMap[data.prepayment]) +
+      '</div>';
+  }
+
+  const eyebrows = ['Loan Type','Contact Details','Loan Details','Interest Rate','Repayment','Review & Save'];
+  const titles = ['What kind of loan?','Who is involved?','Loan amount & dates','How is interest charged?','How will it be repaid?','Confirm and save'];
+  const subs = ['Track money you gave or money you took.','Details of the person you\'re transacting with.','Enter the principal amount and start date.','Choose the interest method for this loan.','Set the repayment schedule and tenure.','Review all details before creating the loan.'];
+
+  return topbar('Create Loan','','')+
+    '<div class="content"><div class="wz-wrap"><div class="wz-prog">'+prog+'</div>' +
+    '<div class="wz-card">' +
+    '<div class="wz-head"><div class="wz-eyebrow">Step '+step+' of 6 — '+eyebrows[step-1]+'</div>' +
+    '<div class="wz-title">'+titles[step-1]+'</div>' +
+    '<div class="wz-sub">'+subs[step-1]+'</div></div>' +
+    '<div class="wz-body">'+body+'</div>' +
+    '<div class="wz-foot">' + topButtons +
+    (step < 6
+      ? '<button class="btn btn-primary" onclick="wizNext()">Continue →</button>'
+      : '<button class="btn btn-success" onclick="wizSave()">✓ Save Loan</button>') +
+    '</div></div></div></div>';
+}
+
+function optRow(field, val, cur, title, sub) {
+  return '<div class="opt-row '+(cur===val?'sel':'')+'" onclick="wizSel(\''+field+'\',\''+val+'\')">' +
+    '<div class="opt-radio"></div><div class="opt-info">' +
+    '<div class="oi-title">'+title+'</div><div class="oi-sub">'+sub+'</div></div></div>';
+}
+
+function rvRow(k, v, raw) {
+  return '<div class="rv-row"><span class="rk">'+k+'</span><span class="rv">'+(raw?v:esc(String(v)))+'</span></div>';
+}
+
+function wizSel(field, val) { S.wiz.data[field] = val; render(); }
+
+function wizNext() {
+  const {step, data, errors} = S.wiz;
+  const errs = {};
+  if(step===1 && !data.type) errs.type = 'Please select a loan type.';
+  if(step===2 && !data.cName.trim()) errs.cName = 'Name is required.';
+  if(step===3) {
+    if(!data.principal || +data.principal <= 0) errs.principal = 'Enter a valid principal amount.';
+    if(!data.startDate) errs.startDate = 'Select a start date.';
+  }
+  if(step===4) {
+    if(data.iType==='fixed_amount' && (!data.iFixedAmt || +data.iFixedAmt < 0)) errs.iRate = 'Enter the fixed interest amount.';
+    if(data.iType!=='none' && data.iType!=='fixed_amount' && (!data.iRate || +data.iRate < 0)) errs.iRate = 'Enter the interest rate.';
+  }
+  if(step===5 && data.freq!=='one_time' && (!data.tenure || +data.tenure < 1)) errs.tenure = 'Enter a valid tenure.';
+  S.wiz.errors = errs;
+  if(Object.keys(errs).length) { render(); return; }
+  if(data.freq==='one_time') S.wiz.data.tenure = '1';
+  S.wiz.step++;
+  render();
+}
+
+function wizBack() { S.wiz.step = Math.max(1, S.wiz.step-1); S.wiz.errors = {}; render(); }
+
+function wizSave() {
+  const {data} = S.wiz;
+  const tenure = +(data.freq==='one_time' ? 1 : data.tenure);
+  const emi = calcEMI(data.principal, data.iRate||0, tenure, data.iType, data.iPeriod, data.iFixedAmt);
+  const newLoan = {
+    id: 'L'+uid(), type:data.type, status:'active',
+    contact:{name:data.cName.trim(),phone:data.cPhone,email:data.cEmail,notes:data.cNotes},
+    principal:+data.principal, interestRate:+(data.iRate||0), interestType:data.iType,
+    interestPeriod:data.iPeriod, interestFixedAmt:+(data.iFixedAmt||0),
+    interestCollection:data.iCollection,
+    latePenalty:data.latePenalty, latePenaltyVal:+(data.latePenaltyVal||0),
+    graceDays:+(data.gracedays||0),
+    prepayment:data.prepayment, prepaymentPct:+(data.prepaymentPct||0),
+    tenure, frequency:data.freq, purpose:data.purpose||'Personal',
+    startDate:data.startDate, emi, paidCount:0, createdAt:TODAY()
+  };
+  S.loans.push(newLoan);
+  S.selLoanId = newLoan.id;
+  S.wiz.step = 7;
+  render();
+  showToast('Loan created successfully!');
+}
+
+// ── LOAN DETAIL ────────────────────────────────────────────────────
+function pgLoanDetail() {
+  const loan = getLoan(S.selLoanId);
+  if(!loan) return topbar('Loan Not Found','','loans')+'<div class="content"><p>Loan not found.</p></div>';
+
+  const outstanding = calcOutstanding(loan);
+  const intPaid = calcInterestPaid(loan);
+  const totalPaid = loan.paidCount * loan.emi;
+  const nextDate = getNextEMI(loan);
+
+  const actionBtns = loan.status !== 'closed'
+    ? '<button class="btn btn-success btn-sm" onclick="openModal(\'payment\',\''+loan.id+'\')">+ Add Payment</button>' +
+      '<button class="btn btn-outline btn-sm" onclick="openModal(\'close\',\''+loan.id+'\')">Close Loan</button>'
+    : '<span class="badge b-closed" style="font-size:12px">Loan Closed</span>';
+
+  const tabs = ['overview','schedule','transactions','timeline'].map(t =>
+    '<button class="tab-btn '+(S.loanTab===t?'active':'')+'" onclick="S.loanTab=\''+t+'\';render()">'+
+    t.charAt(0).toUpperCase()+t.slice(1)+'</button>'
+  ).join('');
+
+  let tabContent = '';
+  if(S.loanTab === 'overview') {
+    const pct = loan.status==='closed' ? 100 : Math.round((loan.paidCount/loan.tenure)*100);
+    const lip = loan.interestPeriod||'year';
+    const lpMap2 = {day:'per day',week:'per week',month:'per month',year:'per year'};
+    const iStr = loan.interestType==='none'?'No interest':
+      loan.interestType==='fixed_amount'?'Fixed '+fmt(loan.interestFixedAmt||0)+' total':
+      loan.interestRate+'% '+lpMap2[lip]+' ('+loan.interestType+')';
+    const collMap = {with_emi:'With each EMI',upfront:'Upfront',at_end:'At end (balloon)'};
+    const latePMap = {none:'No penalty',
+      fixed:'Fixed '+fmt(loan.latePenaltyVal||0)+' / late payment',
+      pct_month:(loan.latePenaltyVal||0)+'% per month'};
+    const prepMap = {allowed:'Freely allowed',
+      with_penalty:'With '+(loan.prepaymentPct||0)+'% penalty',
+      not_allowed:'Not allowed'};
+    tabContent = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">' +
+      '<div class="card"><div class="card-hd"><h3>Loan Info</h3></div><div class="card-bd" style="padding:0">' +
+      detRow('Type', loan.type==='given'?'<span class="badge b-given">Given</span>':'<span class="badge b-taken">Taken</span>', true) +
+      detRow('Status', '<span class="badge b-'+loan.status+'">'+loan.status+'</span>', true) +
+      detRow('Purpose', loan.purpose) +
+      detRow('Start Date', fmtD(loan.startDate)) +
+      detRow('Tenure', loan.tenure+' months') +
+      detRow('Frequency', loan.frequency.charAt(0).toUpperCase()+loan.frequency.slice(1)) +
+      detRow('Interest', iStr) +
+      (loan.interestCollection ? detRow('Collection', collMap[loan.interestCollection]||'With each EMI') : '') +
+      '</div></div>' +
+      '<div class="card"><div class="card-hd"><h3>Repayment Progress</h3></div><div class="card-bd">' +
+      '<div style="text-align:center;margin-bottom:14px"><div style="font-size:32px;font-weight:700;font-family:var(--fm);color:var(--accent)">'+pct+'%</div><div class="text-muted text-sm">completed</div></div>' +
+      '<div class="prog-bar" style="height:8px;margin-bottom:16px"><div class="prog-fill" style="width:'+pct+'%;background:var(--accent)"></div></div>' +
+      detRow2('EMI Amount', fmt(loan.emi)) +
+      detRow2('Paid So Far', fmt(totalPaid)) +
+      detRow2('Outstanding', fmt(outstanding)) +
+      detRow2('Interest Paid', fmt(intPaid)) +
+      (nextDate ? detRow2('Next EMI', fmtD(nextDate)) : '') +
+      '</div></div></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">' +
+      '<div class="card"><div class="card-hd"><h3>Contact</h3></div><div class="card-bd">' +
+      '<div style="font-size:17px;font-weight:700;font-family:var(--fd);margin-bottom:10px">'+esc(loan.contact.name)+'</div>' +
+      (loan.contact.phone ? '<div class="text-sm mb-3">📞 '+esc(loan.contact.phone)+'</div>' : '') +
+      (loan.contact.email ? '<div class="text-sm mb-3">✉️ '+esc(loan.contact.email)+'</div>' : '') +
+      (loan.contact.notes ? '<div class="text-sm text-muted" style="background:var(--ground);padding:10px 12px;border-radius:8px">'+esc(loan.contact.notes)+'</div>' : '') +
+      '</div></div>' +
+      '<div class="card"><div class="card-hd"><h3>Loan Terms</h3></div><div class="card-bd" style="padding:0">' +
+      detRow('Late Payment', latePMap[loan.latePenalty||'none']) +
+      (loan.latePenalty&&loan.latePenalty!=='none'&&loan.graceDays ? detRow('Grace Period', loan.graceDays+' days') : '') +
+      detRow('Early Repayment', prepMap[loan.prepayment||'allowed']) +
+      (loan.interestCollection ? detRow('Int. Collection', collMap[loan.interestCollection]) : '') +
+      '</div></div>' +
+      '</div>';
+  } else if(S.loanTab === 'schedule') {
+    const sched = generateSchedule(loan);
+    tabContent = '<div class="card"><div class="tbl-wrap"><table>' +
+      '<thead><tr><th>#</th><th>Due Date</th><th class="td-r">EMI</th><th class="td-r">Principal</th><th class="td-r">Interest</th><th class="td-r">Balance</th><th>Status</th></tr></thead><tbody>' +
+      sched.map(r => '<tr style="'+(r.status==='overdue'?'background:#fff9f9':'')+'"><td class="text-muted">'+r.no+'</td>' +
+        '<td>'+(r.status==='overdue'?'<span class="text-red">':'')+fmtDs(r.due)+(r.status==='overdue'?'</span>':'')+'</td>' +
+        '<td class="td-mono td-r">'+fmt(r.emi)+'</td>' +
+        '<td class="td-mono td-r text-muted">'+fmt(r.prin)+'</td>' +
+        '<td class="td-mono td-r text-amber">'+fmt(r.int)+'</td>' +
+        '<td class="td-mono td-r">'+fmt(r.bal)+'</td>' +
+        '<td><span class="badge b-'+r.status+'">'+r.status+'</span></td></tr>'
+      ).join('') + '</tbody></table></div></div>';
+  } else if(S.loanTab === 'transactions') {
+    const lTx = S.tx.filter(t => t.loanId === loan.id).sort((a,b) => b.date.localeCompare(a.date));
+    tabContent = '<div class="card"><div class="tbl-wrap">' +
+      (lTx.length
+        ? '<table><thead><tr><th>Date</th><th>Notes</th><th class="td-r">Amount</th><th>Mode</th><th>EMI #</th></tr></thead><tbody>' +
+          lTx.map(t =>
+            '<tr><td class="text-muted text-sm">'+fmtD(t.date)+'</td>' +
+            '<td>'+esc(t.notes)+'</td>' +
+            '<td class="td-mono td-r '+(t.type==='received'?'text-green':'text-red')+'">'+(t.type==='received'?'+':'-')+fmt(t.amount)+'</td>' +
+            '<td class="text-sm text-muted">'+esc(t.mode)+'</td>' +
+            '<td class="text-muted">'+t.inst+'</td></tr>'
+          ).join('') + '</tbody></table>'
+        : '<div class="empty-state"><div class="es-icon">💸</div><h3 class="es-title">No transactions yet</h3><p class="es-sub">Add a payment to record repayments.</p></div>'
+      ) + '</div></div>';
+  } else if(S.loanTab === 'timeline') {
+    const lTx = S.tx.filter(t => t.loanId === loan.id).sort((a,b) => b.date.localeCompare(a.date));
+    const items = [
+      {dot:'tl-b',icon:'📋',title:'Loan created',sub:fmtD(loan.createdAt)+' · '+fmt(loan.principal)},
+      ...lTx.map(t => ({
+        dot: t.type==='received'?'tl-g':'tl-a',
+        icon: t.type==='received'?'💚':'💸',
+        title: (t.type==='received'?'Payment received':'Payment made') + ' — ' + fmt(t.amount),
+        sub: fmtD(t.date) + ' · ' + esc(t.mode) + ' · ' + esc(t.notes)
+      })),
+      ...(loan.status==='closed' ? [{dot:'tl-r',icon:'🔒',title:'Loan closed',sub:'Fully settled'}] : [])
+    ];
+    tabContent = '<div class="card"><div class="card-bd">' +
+      items.map(item =>
+        '<div class="tl-item"><div class="tl-dot '+item.dot+'">'+item.icon+'</div>' +
+        '<div class="tl-main"><div class="tl-title">'+item.title+'</div><div class="tl-sub">'+item.sub+'</div></div></div>'
+      ).join('') + '</div></div>';
+  }
+
+  return topbar(esc(loan.contact.name), actionBtns, 'loans') +
+    '<div class="content">' +
+    '<div class="loan-hero">' +
+    '<div class="hero-name">'+esc(loan.contact.name)+'</div>' +
+    '<div class="hero-meta">' +
+    '<span>'+(loan.type==='given'?'↑ Given':'↓ Taken')+'</span>' +
+    '<span>'+esc(loan.purpose)+'</span>' +
+    '<span><span class="badge b-'+loan.status+'">'+loan.status+'</span></span>' +
+    '</div>' +
+    '<div class="hero-stats">' +
+    hStat('Principal',fmt(loan.principal),'') +
+    hStat('Outstanding',fmt(outstanding), outstanding>0?'hv-r':'hv-g') +
+    hStat('Paid',fmt(totalPaid),'hv-g') +
+    hStat('Int. '+( loan.type==='given'?'Earned':'Paid'),fmt(intPaid),'hv-a') +
+    '</div></div>' +
+    '<div class="tabs">'+tabs+'</div>' +
+    tabContent +
+    '</div>';
+}
+
+function hStat(label, val, cls) {
+  return '<div class="h-stat"><div class="h-lbl">'+label+'</div><div class="h-val '+(cls||'')+'">' + val + '</div></div>';
+}
+function detRow(k,v,raw) {
+  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 16px;border-bottom:1px solid var(--border2);font-size:13px">' +
+    '<span class="text-muted">'+k+'</span><span style="font-weight:600">'+(raw?v:esc(String(v)))+'</span></div>';
+}
+function detRow2(k,v) {
+  return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13.5px">' +
+    '<span class="text-muted">'+k+'</span><span style="font-family:var(--fm);font-weight:700">'+v+'</span></div>';
+}
+
+// ── TRANSACTIONS ───────────────────────────────────────────────────
+function pgTransactions() {
+  const filters = ['all','received','paid'];
+  let tx = [...S.tx].sort((a,b) => b.date.localeCompare(a.date));
+  if(S.txFilter !== 'all') tx = tx.filter(t => t.type === S.txFilter);
+
+  const chips = filters.map(f =>
+    '<button class="chip '+(S.txFilter===f?'active':'')+'" onclick="S.txFilter=\''+f+'\';render()">'+
+    {all:'All',received:'Received',paid:'Paid'}[f]+'</button>'
+  ).join('');
+
+  return topbar('Transactions') +
+    '<div class="content">' +
+    '<div class="filter-row">'+chips+'</div>' +
+    '<div class="card"><div class="tbl-wrap"><table>' +
+    '<thead><tr><th>Date</th><th>Contact</th><th>Type</th><th>Notes</th><th class="td-r">Amount</th><th>Mode</th></tr></thead><tbody>' +
+    tx.map(t => {
+      const loan = getLoan(t.loanId);
+      if(!loan) return '';
+      return '<tr><td class="text-sm text-muted">'+fmtD(t.date)+'</td>' +
+        '<td class="td-name" style="cursor:pointer" onclick="navigate(\'loanDetail\',{id:\''+loan.id+'\'})">'+esc(loan.contact.name)+'</td>' +
+        '<td><span class="badge '+(loan.type==='given'?'b-given':'b-taken')+'">'+(loan.type==='given'?'Given':'Taken')+'</span></td>' +
+        '<td class="text-sm text-muted">'+esc(t.notes)+'</td>' +
+        '<td class="td-mono td-r '+(t.type==='received'?'text-green':'text-red')+'">'+(t.type==='received'?'+':'-')+fmt(t.amount)+'</td>' +
+        '<td class="text-sm text-muted">'+esc(t.mode)+'</td></tr>';
+    }).join('') + '</tbody></table></div></div></div>';
+}
+
+// ── EXPENSES ───────────────────────────────────────────────────────
+function pgExpenses() {
+  const total = S.exp.reduce((s,e) => s+e.amount, 0);
+  const bycat = S.exp.reduce((m,e) => {m[e.category]=(m[e.category]||0)+e.amount;return m},{});
+
+  return topbar('Expenses','<button class="btn btn-primary" onclick="openModal(\'expense\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Expense</button>') +
+    '<div class="content">' +
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">' +
+    '<div class="stat-card sc-red"><div class="stat-lbl">Total Expenses</div><div class="stat-val">'+fmt(total)+'</div><div class="stat-sub">'+S.exp.length+' entries</div></div>' +
+    Object.entries(bycat).slice(0,2).map(([cat,amt]) =>
+      '<div class="stat-card sc-gray"><div class="stat-lbl">'+cat+'</div><div class="stat-val" style="color:var(--text2)">'+fmt(amt)+'</div></div>'
+    ).join('') +
+    '</div>' +
+    '<div class="card"><div class="tbl-wrap"><table>' +
+    '<thead><tr><th>Date</th><th>Category</th><th>Notes</th><th class="td-r">Amount</th><th></th></tr></thead><tbody>' +
+    [...S.exp].sort((a,b)=>b.date.localeCompare(a.date)).map(e =>
+      '<tr><td class="text-sm text-muted">'+fmtD(e.date)+'</td>' +
+      '<td><span class="badge b-upcoming">'+esc(e.category)+'</span></td>' +
+      '<td class="text-muted text-sm">'+esc(e.notes)+'</td>' +
+      '<td class="td-mono td-r text-red">'+fmt(e.amount)+'</td>' +
+      '<td><button class="btn btn-ghost btn-sm" onclick="deleteExpense(\''+e.id+'\')" style="color:var(--red)">✕</button></td></tr>'
+    ).join('') + '</tbody></table></div></div></div>';
+}
+
+function deleteExpense(id) {
+  S.exp = S.exp.filter(e => e.id !== id);
+  render(); showToast('Expense deleted');
+}
+
+// ── REPORTS ────────────────────────────────────────────────────────
+function pgReports() {
+  const ds = dashStats();
+  const overdueLoans = S.loans.filter(l => l.status==='overdue');
+
+  // Monthly chart data (last 6 months)
+  const months = [];
+  for(let i=5;i>=0;i--) {
+    const d = new Date('2026-06-01'); d.setMonth(d.getMonth()-i);
+    const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    const lbl = d.toLocaleDateString('en-IN',{month:'short'});
+    const received = S.tx.filter(t=>t.type==='received'&&t.date.startsWith(key)).reduce((s,t)=>s+t.amount,0);
+    const paid = S.tx.filter(t=>t.type==='paid'&&t.date.startsWith(key)).reduce((s,t)=>s+t.amount,0);
+    months.push({lbl,received,paid});
+  }
+  const maxV = Math.max(...months.flatMap(m=>[m.received,m.paid]),1);
+
+  const barChart = '<svg width="100%" viewBox="0 0 400 130" preserveAspectRatio="xMidYMid meet">' +
+    months.map((m,i) => {
+      const x = 30 + i * 62;
+      const rH = (m.received/maxV)*85;
+      const pH = (m.paid/maxV)*85;
+      return '<rect x="'+(x-14)+'" y="'+(105-rH)+'" width="13" height="'+Math.max(rH,2)+'" rx="3" fill="#1E5F3F" opacity=".85"/>' +
+        '<rect x="'+(x+1)+'" y="'+(105-pH)+'" width="13" height="'+Math.max(pH,2)+'" rx="3" fill="#8B2E2E" opacity=".8"/>' +
+        '<text x="'+x+'" y="120" text-anchor="middle" font-size="9.5" fill="#8888A0" font-family="system-ui">'+m.lbl+'</text>';
+    }).join('') + '</svg>';
+
+  // Donut chart
+  const givenOut = S.loans.filter(l=>l.type==='given'&&l.status!=='closed').reduce((s,l)=>s+calcOutstanding(l),0);
+  const takenOut = S.loans.filter(l=>l.type==='taken'&&l.status!=='closed').reduce((s,l)=>s+calcOutstanding(l),0);
+  const total = givenOut + takenOut || 1;
+  const r=44, cx=64, cy=64, circ=2*Math.PI*r;
+  const gDash = (givenOut/total)*circ;
+  const donut = '<svg width="128" height="128" viewBox="0 0 128 128">' +
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#E2E1DE" stroke-width="16"/>' +
+    (givenOut > 0 ? '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#1E5F3F" stroke-width="16" stroke-dasharray="'+gDash+' '+(circ-gDash)+'" transform="rotate(-90 '+cx+' '+cy+')"/>' : '') +
+    (takenOut > 0 ? '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#8B2E2E" stroke-width="16" stroke-dasharray="'+(circ-gDash)+' '+gDash+'" stroke-dashoffset="'+(-gDash)+'" transform="rotate(-90 '+cx+' '+cy+')"/>' : '') +
+    '<text x="'+cx+'" y="'+(cy-5)+'" text-anchor="middle" font-size="10" fill="#8888A0" font-family="system-ui">Given</text>' +
+    '<text x="'+cx+'" y="'+(cy+10)+'" text-anchor="middle" font-size="12" font-weight="700" fill="#1A1A2E" font-family="Courier New">'+Math.round(givenOut/total*100)+'%</text>' +
+    '</svg>';
+
+  return topbar('Reports') +
+    '<div class="content">' +
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">' +
+    statCard('sc-green','Total Receivable',ds.receivable,'Outstanding from borrowers') +
+    statCard('sc-red','Total Payable',ds.payable,'Outstanding to lenders') +
+    statCard('sc-amber','Net Position',ds.receivable-ds.payable,ds.receivable>=ds.payable?'Positive balance':'Negative balance') +
+    statCard('sc-green','Interest Earned',ds.intEarned,'From given loans') +
+    statCard('sc-red','Interest Paid',ds.intPaid,'On taken loans') +
+    '<div class="stat-card sc-'+(overdueLoans.length?'red':'gray')+'"><div class="stat-lbl">Overdue Loans</div><div class="stat-val" style="'+(overdueLoans.length?'color:var(--red)':'color:var(--text2)')+'">'+overdueLoans.length+'</div><div class="stat-sub">Require attention</div></div>' +
+    '</div>' +
+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">' +
+    '<div class="card"><div class="card-hd"><h3>Monthly Cash Flow</h3></div>' +
+    '<div style="padding:16px"><div style="display:flex;gap:16px;margin-bottom:10px">' +
+    '<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)"><span style="width:10px;height:10px;background:var(--green);border-radius:2px;display:inline-block"></span>Received</span>' +
+    '<span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)"><span style="width:10px;height:10px;background:var(--red);border-radius:2px;display:inline-block"></span>Paid</span>' +
+    '</div>' + barChart + '</div></div>' +
+
+    '<div class="card"><div class="card-hd"><h3>Loan Distribution</h3></div>' +
+    '<div style="display:flex;align-items:center;justify-content:center;gap:20px;padding:20px">' +
+    donut +
+    '<div>' +
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:12px;height:12px;background:var(--green);border-radius:2px;flex-shrink:0"></span><div><div class="text-sm font-bold">Given</div><div class="font-mono text-sm">'+fmt(givenOut)+'</div></div></div>' +
+    '<div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;background:var(--red);border-radius:2px;flex-shrink:0"></span><div><div class="text-sm font-bold">Taken</div><div class="font-mono text-sm">'+fmt(takenOut)+'</div></div></div>' +
+    '</div></div></div>' +
+    '</div>' +
+
+    (overdueLoans.length
+      ? '<div class="card"><div class="card-hd"><h3>Overdue Loans</h3><span class="badge b-overdue">'+overdueLoans.length+'</span></div><div class="tbl-wrap"><table><thead><tr><th>Contact</th><th>Purpose</th><th class="td-r">Outstanding</th><th>Missed EMIs</th><th></th></tr></thead><tbody>' +
+        overdueLoans.map(l => {
+          const missed = generateSchedule(l).filter(r=>r.status==='overdue').length;
+          return '<tr><td class="td-name">'+esc(l.contact.name)+'</td><td class="text-muted text-sm">'+esc(l.purpose)+'</td>' +
+            '<td class="td-mono td-r text-red">'+fmt(calcOutstanding(l))+'</td>' +
+            '<td><span class="badge b-overdue">'+missed+'</span></td>' +
+            '<td><button class="btn btn-ghost btn-sm" onclick="navigate(\'loanDetail\',{id:\''+l.id+'\'})">View →</button></td></tr>';
+        }).join('') + '</tbody></table></div></div>'
+      : '')
+    + '</div>';
+}
+
+// ── SETTINGS ───────────────────────────────────────────────────────
+function pgSettings() {
+  return topbar('Settings') +
+    '<div class="content">' +
+    '<div class="card mb-4"><div class="card-hd"><h3>Data Management</h3></div><div class="card-bd">' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">' +
+    '<div style="border:1.5px solid var(--border);border-radius:var(--r);padding:18px;text-align:center">' +
+    '<div style="font-size:28px;margin-bottom:8px">📤</div>' +
+    '<div style="font-weight:700;margin-bottom:4px">Export Data</div>' +
+    '<div class="text-sm text-muted mb-3">Download all your loans and transactions as JSON.</div>' +
+    '<button class="btn btn-outline btn-sm" onclick="exportData()">Export JSON</button></div>' +
+    '<div style="border:1.5px solid var(--border);border-radius:var(--r);padding:18px;text-align:center">' +
+    '<div style="font-size:28px;margin-bottom:8px">📥</div>' +
+    '<div style="font-weight:700;margin-bottom:4px">Import Data</div>' +
+    '<div class="text-sm text-muted mb-3">Restore from a previously exported JSON file.</div>' +
+    '<label class="btn btn-outline btn-sm" style="cursor:pointer">Import JSON<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label></div>' +
+    '<div style="border:1.5px dashed var(--border);border-radius:var(--r);padding:18px;text-align:center">' +
+    '<div style="font-size:28px;margin-bottom:8px">⚠️</div>' +
+    '<div style="font-weight:700;margin-bottom:4px">Reset All Data</div>' +
+    '<div class="text-sm text-muted mb-3">Clear all data and restore sample entries.</div>' +
+    '<button class="btn btn-danger btn-sm" onclick="resetData()">Reset Data</button></div>' +
+    '</div></div></div>' +
+
+    '<div class="card"><div class="card-hd"><h3>Summary</h3></div><div class="card-bd">' +
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center">' +
+    '<div><div style="font-family:var(--fm);font-size:22px;font-weight:700">'+S.loans.length+'</div><div class="text-sm text-muted">Total Loans</div></div>' +
+    '<div><div style="font-family:var(--fm);font-size:22px;font-weight:700">'+S.tx.length+'</div><div class="text-sm text-muted">Transactions</div></div>' +
+    '<div><div style="font-family:var(--fm);font-size:22px;font-weight:700">'+S.exp.length+'</div><div class="text-sm text-muted">Expenses</div></div>' +
+    '<div><div style="font-family:var(--fm);font-size:22px;font-weight:700">'+TODAY()+'</div><div class="text-sm text-muted">Date (POC)</div></div>' +
+    '</div></div></div>' +
+    '</div>';
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify({loans:S.loans,tx:S.tx,exp:S.exp},null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='loanbook-export.json'; a.click();
+  showToast('Data exported!');
+}
+
+function importData(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if(data.loans) S.loans = data.loans;
+      if(data.tx) S.tx = data.tx;
+      if(data.exp) S.exp = data.exp;
+      render(); showToast('Data imported successfully!');
+    } catch { showToast('Invalid JSON file'); }
+  };
+  reader.readAsText(file);
+}
+
+function resetData() {
+  if(!confirm('Reset all data? This will restore the sample entries.')) return;
+  S.loans = JSON.parse(JSON.stringify(INIT_LOANS));
+  S.tx = JSON.parse(JSON.stringify(INIT_TX));
+  S.exp = JSON.parse(JSON.stringify(INIT_EXP));
+  render(); showToast('Data reset to defaults');
+}
+
+// ── MODALS ─────────────────────────────────────────────────────────
+function openModal(type, id='') {
+  S.modal = type;
+  S.mData = {loanId:id, amount:'', date:TODAY(), mode:'UPI', notes:'', category:'Food', settled:false};
+  render();
+}
+
+function getModal() {
+  if(S.modal === 'payment') {
+    const loan = getLoan(S.mData.loanId);
+    if(!loan) return '';
+    const outstanding = calcOutstanding(loan);
+    return '<div class="modal-overlay" onclick="closeModal(event)">' +
+      '<div class="modal-box" onclick="event.stopPropagation()">' +
+      '<div class="modal-hd"><div class="modal-title">Record Payment</div><button class="modal-x" onclick="S.modal=null;render()">✕</button></div>' +
+      '<div class="modal-bd">' +
+      '<div style="background:var(--ground);border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:13px">' +
+      '<span class="text-muted">Outstanding: </span><span class="font-mono font-bold text-red">'+fmt(outstanding)+'</span>' +
+      '</div>' +
+      '<div class="fg"><label>Amount (₹) *</label><input class="fc" id="m-amount" type="number" min="1" max="'+outstanding+'" value="'+S.mData.amount+'" placeholder="'+loan.emi+'" oninput="S.mData.amount=this.value"></div>' +
+      '<div class="form-row">' +
+      '<div class="fg"><label>Date</label><input class="fc" type="date" value="'+S.mData.date+'" oninput="S.mData.date=this.value"></div>' +
+      '<div class="fg"><label>Mode</label><select class="fc" onchange="S.mData.mode=this.value">' +
+      ['UPI','Cash','Bank Transfer','Cheque'].map(m=>'<option '+(S.mData.mode===m?'selected':'')+'>'+m+'</option>').join('') +
+      '</select></div></div>' +
+      '<div class="fg"><label>Notes</label><input class="fc" type="text" value="'+esc(S.mData.notes)+'" placeholder="e.g. June EMI" oninput="S.mData.notes=this.value"></div>' +
+      '</div>' +
+      '<div class="modal-ft"><button class="btn btn-outline" onclick="S.modal=null;render()">Cancel</button>' +
+      '<button class="btn btn-success" onclick="confirmPayment()">Record Payment</button></div>' +
+      '</div></div>';
+  }
+
+  if(S.modal === 'expense') {
+    return '<div class="modal-overlay" onclick="closeModal(event)">' +
+      '<div class="modal-box" onclick="event.stopPropagation()">' +
+      '<div class="modal-hd"><div class="modal-title">Add Expense</div><button class="modal-x" onclick="S.modal=null;render()">✕</button></div>' +
+      '<div class="modal-bd">' +
+      '<div class="form-row">' +
+      '<div class="fg"><label>Category</label><select class="fc" onchange="S.mData.category=this.value">' +
+      ['Food','Transport','Medical','Utilities','Entertainment','Education','Personal','Other'].map(c=>'<option '+(S.mData.category===c?'selected':'')+'>'+c+'</option>').join('') +
+      '</select></div>' +
+      '<div class="fg"><label>Amount (₹) *</label><input class="fc" type="number" min="1" value="'+S.mData.amount+'" placeholder="500" oninput="S.mData.amount=this.value"></div>' +
+      '</div>' +
+      '<div class="fg"><label>Date</label><input class="fc" type="date" value="'+S.mData.date+'" oninput="S.mData.date=this.value"></div>' +
+      '<div class="fg"><label>Notes</label><input class="fc" type="text" value="'+esc(S.mData.notes)+'" placeholder="What was this for?" oninput="S.mData.notes=this.value"></div>' +
+      '</div>' +
+      '<div class="modal-ft"><button class="btn btn-outline" onclick="S.modal=null;render()">Cancel</button>' +
+      '<button class="btn btn-primary" onclick="confirmExpense()">Add Expense</button></div>' +
+      '</div></div>';
+  }
+
+  if(S.modal === 'close') {
+    const loan = getLoan(S.mData.loanId);
+    if(!loan) return '';
+    const outstanding = calcOutstanding(loan);
+    return '<div class="modal-overlay" onclick="closeModal(event)">' +
+      '<div class="modal-box" onclick="event.stopPropagation()">' +
+      '<div class="modal-hd"><div class="modal-title">Close Loan</div><button class="modal-x" onclick="S.modal=null;render()">✕</button></div>' +
+      '<div class="modal-bd">' +
+      (outstanding > 0
+        ? '<div class="alert al-warn">Outstanding balance of '+fmt(outstanding)+' remains. Closing marks this as settled.</div>'
+        : '<div class="alert" style="background:#d6efe3;color:#1e5f3f;border:1px solid #a8dac0">Balance is fully paid. Ready to close.</div>') +
+      '<p style="font-size:13.5px;color:var(--text2)">Close <strong>'+esc(loan.contact.name)+'</strong>\'s loan? This cannot be undone.</p>' +
+      '</div>' +
+      '<div class="modal-ft"><button class="btn btn-outline" onclick="S.modal=null;render()">Cancel</button>' +
+      '<button class="btn btn-danger" onclick="confirmCloseLoan()">Close Loan</button></div>' +
+      '</div></div>';
+  }
+
+  return '';
+}
+
+function closeModal(e) { if(e.target.classList.contains('modal-overlay')) { S.modal=null; render(); } }
+
+function confirmPayment() {
+  const loan = getLoan(S.mData.loanId);
+  if(!loan) return;
+  const amount = +S.mData.amount;
+  if(!amount || amount <= 0) { showToast('Enter a valid amount'); return; }
+  const outstanding = calcOutstanding(loan);
+  if(amount > outstanding) { showToast('Amount cannot exceed outstanding ₹' + Math.round(outstanding).toLocaleString('en-IN')); return; }
+  const newTx = {
+    id:'T'+uid(), loanId:loan.id, date:S.mData.date,
+    amount, mode:S.mData.mode, type:loan.type==='given'?'received':'paid',
+    notes:S.mData.notes||('EMI #'+(loan.paidCount+1)),
+    inst:loan.paidCount+1
+  };
+  S.tx.push(newTx);
+  loan.paidCount++;
+  if(calcOutstanding(loan) <= 0) loan.status='closed';
+  else if(loan.status==='overdue') loan.status='active';
+  S.modal=null; render();
+  showToast(fmt(amount)+' payment recorded!');
+}
+
+function confirmExpense() {
+  if(!S.mData.amount || +S.mData.amount<=0) { showToast('Enter a valid amount'); return; }
+  S.exp.push({id:'E'+uid(), date:S.mData.date, category:S.mData.category, amount:+S.mData.amount, notes:S.mData.notes});
+  S.modal=null; render();
+  showToast('Expense added!');
+}
+
+function confirmCloseLoan() {
+  const loan = getLoan(S.mData.loanId);
+  if(loan) { loan.status='closed'; loan.paidCount = loan.tenure; }
+  S.modal=null; render();
+  showToast('Loan closed');
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────
+let _toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.style.display='block';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>{ el.style.display='none'; }, 2800);
+}
+
+// ── INIT ───────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => { render(); });
+</script>
