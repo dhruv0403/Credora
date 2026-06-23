@@ -315,3 +315,100 @@ Every restructuring action must record who performed it and why (free-text reaso
 - Any combination of the loan building blocks in §4 (disbursement structure × interest type × timing × repayment type × frequency) produces a correct, inspectable schedule.
 - A Business+Shared space correctly allocates profit/loss to partners proportional to their share %, and a non-Owner partner sees only their own row.
 - Dashboard and report numbers for one space never include data from any other space, even when the same user owns both.
+
+---
+
+## 13. Edge Cases & Special Conditions (Scenario → System Behaviour)
+
+### 13.1 Spaces, Membership & Roles
+
+| # | Scenario | System Behaviour |
+|---|---|---|
+| 1 | Sole Owner tries to leave or be removed from a Shared space | Blocked: "A space must have an Owner — transfer ownership first." |
+| 2 | Invite sent to an email with no existing Credora account | Invite held pending; auto-accepted into the space once that email registers |
+| 3 | Admin attempts to change Space Settings via direct API call | Blocked (403) — Settings is Owner-only per the role matrix, enforced server-side |
+| 4 | Viewer attempts to log a payment via direct API call | Blocked (403) — write actions disabled for Viewer regardless of endpoint |
+| 5 | Space Type changed Personal → Business with existing data | Confirmation modal required; data preserved; Partnership Model becomes available with zero auto-generated partner records |
+| 6 | Space Visibility changed Shared → Private with >1 member | Blocked: "Remove other members before making this space Private." |
+| 7 | Space Type changed Business → Personal while partner records exist | Blocked: "Remove all partner contribution/share records first." |
+| 8 | Owner deletes a Space | Requires typed confirmation; soft-deleted with a retention window (e.g. 30 days) for export, not an instant hard delete |
+
+### 13.2 Loans — Interest & Terms
+
+| # | Scenario | System Behaviour |
+|---|---|---|
+| 9 | Interest rate edited directly on an ACTIVE loan | Blocked once ACTIVE, regardless of transactions — direct field edit is for DRAFT loans only. On a DRAFT loan with no transactions: Warning ("Regenerating schedule will void current schedule — confirm.") and proceeds. |
+| 10 | Interest rate change needed on an ACTIVE loan with transactions | Must go through Restructuring → Change Interest Rate (§8) instead of direct edit — always available to Owner/Admin, recalculates from the effective date, audit-logged |
+| 11 | Repayment model changed on an ACTIVE loan with paid installments | Blocked: repayment model is locked at activation — close and create a new loan instead |
+| 12 | Compound interest selected together with Custom repayment | Blocked: Custom repayment bypasses all interest formulas by definition; selecting Custom disables interest-type formula fields |
+| 13 | Promotional `promo_period_days` longer than total `tenure_periods` | Validation error: promo period can't exceed total tenure |
+| 14 | Variable-rate change scheduled for a past effective date | Blocked: effective date must be today or later |
+| 15 | `DEDUCTED_FROM_DISBURSEMENT` with `net_disbursed_amount` ≥ principal | Validation error: net disbursed amount must be less than principal |
+| 16 | Disbursement date is in the future                          | Allowed while DRAFT. On activation, warning: "Disbursement date is in the future — confirm."                                        |
+| 17 | First due date is before disbursement date                  | Validation error: "First due date cannot be before disbursement date."                                                              |
+| 18 | Principal amount = 0                                        | Validation error: "Principal amount must be greater than zero."                                                                     |
+| 19 | Interest rate = 0% with Flat/Reducing interest              | Warning only: "0% rate is equivalent to a no-interest loan." User may proceed.                                                      |
+| 20 | EMI repayment selected with only 1 installment              | Allowed. Treated as a single-installment EMI schedule.                                                                              |
+| 21 | Custom schedule principal total differs from loan principal | Warning only: "Schedule principal total does not match loan principal." User may proceed because Custom schedules are user-defined. |
+| 22 | Custom loan activated with zero schedule rows               | Blocked: "At least one schedule row is required before activation."                                                                 |
+
+### 13.3 Disbursement
+
+| # | Scenario | System Behaviour |
+|---|---|---|
+| 23 | Top-up disbursement attempted on a CLOSED loan | Blocked: top-ups only allowed on ACTIVE loans |
+| 24 | Multiple disbursements logged on the same date | Allowed — separate disbursement rows, summed into outstanding principal |
+
+### 13.4 Repayment & Payments
+
+| # | Scenario | System Behaviour |
+|---|---|---|
+| 25 | Payment logged on a CLOSED loan | Blocked: "Loan is closed — reopen it first, or log a Manual Adjustment with a reason." |
+| 26 | Payment amount exceeds total outstanding balance | Excess routed per Advance Payment Mode (§6); if balance hits ₹0, prompts "Close as Fully Paid?" |
+| 27 | Payment logged with a future-dated transaction date | Warning, not a hard block: "This date is in the future — confirm?" |
+| 28 | Payment logged against a Flexible/Anytime loan | Always allowed — no due date to violate, just reduces outstanding balance |
+| 29 | A logged transaction is "deleted" | Never a hard delete — auto-creates a reversing `MANUAL_ADJUSTMENT`; original stays visible, marked "Reversed" |
+| 30 | Payment date is before loan disbursement date   | Validation error: "Payment date cannot be before disbursement date." |
+| 31 | Manual Adjustment logged with a negative amount | Allowed. Requires adjustment reason and audit log entry.             |
+
+### 13.5 Advance Payment Mode
+
+| # | Scenario | System Behaviour |
+|---|---|---|
+| 32 | Mode switched CARRY_FORWARD_CREDIT → RECALCULATE_SCHEDULE with existing credit balance | Existing credit is applied immediately as if it were a fresh advance payment under the new mode, then zeroed |
+| 33 | RECALCULATE_SCHEDULE recalculation leaves zero remaining installments | Loan auto-closes as `FULLY_PAID` instead of producing an empty schedule |
+
+### 13.6 Penalties & Late Payment
+
+| # | Scenario | System Behaviour |
+|---|---|---|
+| 34 | Grace period changed after penalties already accrued | New value applies only to future overdue calculations — already-accrued penalties aren't retroactively recalculated; Owner/Admin can waive manually via Restructuring if needed |
+| 35 | "Extra interest" penalty type combined with `interest_type = COMPOUND` | Blocked: stacking both creates ambiguous double-compounding — pick one mechanism per loan |
+
+### 13.7 Settlement, Write-off & Closure
+
+| # | Scenario | System Behaviour |
+|---|---|---|
+| 36 | Settlement `settlement_amount` greater than `outstanding_balance_at_settlement` | Blocked: "A settlement can't exceed what's owed — log a normal payment instead." |
+| 37 | Write-off attempted on a loan with a positive advance credit balance | Credit balance is forfeited/zeroed as part of the write-off; shown in the confirmation dialog |
+| 38 | Owner/Admin reopens a CLOSED loan | Allowed, requires a reason note; status reverts to ACTIVE, closure fields cleared, action logged |
+| 39 | Restructuring action attempted by a Viewer or FieldMan | Blocked (403) — Owner/Admin only, per §8 |
+| 40 | Moratorium (pause) requested over a period with already-paid installments | Blocked: pause can only cover installments that are still UNPAID and in the future |
+
+### 13.8 Partner Model
+
+| # | Scenario | System Behaviour |
+|---|---|---|
+| 41 | Sum of all partners' Profit Share % ≠ 100% | **Open decision** — current default: Warning only ("Total share is 92% — the remainder is unallocated"), not a hard block, since partial/placeholder setups are common early on |
+| 42 | Partner removed from the space with a non-zero Net Position | Blocked: "This partner has an outstanding net position of ₹X — record a final withdrawal/settlement first." |
+| 43 | Capital withdrawal exceeds partner's current Net Position | Blocked: "Withdrawal exceeds current net position." |
+
+### 13.9 Contacts & Data
+
+| # | Scenario | System Behaviour |
+|---|---|---|
+| 44 | Contact deleted while linked loans exist | Blocked: "This contact has N loan(s) — close or reassign them first." |
+| 45 | Same person exists as a Contact in two of the user's spaces | Allowed but unrelated records — no cross-space contact linking (§2.5) |
+| 46 | Import attempted into a Space that already has data | **Open decision** — current default: Blocked, import only supported into an empty new Space in v1; merge-import is a later enhancement |
+| 47 | Contact already has active loans of the same direction | Informational notice only. User may continue creating the loan.                              |
+| 48 | Same contact has both GIVEN and TAKEN loans            | Allowed. Loans remain independent. Contact Detail shows net position across both directions. |
