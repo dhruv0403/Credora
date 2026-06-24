@@ -1,6 +1,6 @@
 # Credora — Product Requirements Document (v2)
 
-**Stack:** FastAPI (Python) backend · React (web, mobile-first responsive) frontend · MySQL database
+**Stack:** Django (Python) backend · React (web, mobile-first responsive) frontend · Postgres database
 **Status:** Pre-build planning spec for AI-assisted development
 **Note on this revision:** This version replaces the single-owner model from v1 with a multi-tenant **Spaces** architecture, and substantially expands loan configurability (interest, disbursement, repayment, penalties, restructuring). The data model, API spec, screens, and roadmap files from the previous pass are now stale and will need a full rework against this PRD before development starts — that rework isn't included here per your request; this pass is PRD-only.
 
