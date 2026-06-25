@@ -200,3 +200,29 @@ class CredoraBackendTests(TestCase):
         # Check that schedule was regenerated or we can trigger it
         # (This is exactly what the view does when switching mode)
 
+    def test_request_response_logging_middleware(self):
+        import json
+        # Capture the logs written to the 'api.request' logger
+        with self.assertLogs('api.request', level='INFO') as cm:
+            # Make a simple request to register endpoint using test client
+            response = self.client.get('/api/auth/register/')
+            
+            # Verify that at least one log entry was captured
+            self.assertTrue(len(cm.output) > 0)
+            
+            # Extract JSON log data from log line
+            log_line = cm.output[0]
+            json_start = log_line.find('{')
+            self.assertNotEqual(json_start, -1)
+            json_str = log_line[json_start:]
+            log_data = json.loads(json_str)
+            
+            # Assert correct logging details
+            self.assertEqual(log_data['method'], 'GET')
+            self.assertEqual(log_data['path'], '/api/auth/register/')
+            self.assertEqual(log_data['status_code'], response.status_code)
+            self.assertIn('request_id', log_data)
+            self.assertIn('latency_ms', log_data)
+            self.assertIn('remote_ip', log_data)
+
+

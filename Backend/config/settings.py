@@ -44,7 +44,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'api.middleware.CorsMiddleware',
+    'api.middleware.cors.CorsMiddleware',
+    'api.middleware.logging.RequestResponseLoggingMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -147,3 +148,56 @@ SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+# Programmatically create the logs directory
+(BASE_DIR / 'logs').mkdir(parents=True, exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'json': {
+            'format': '{message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'app_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs/django.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'request_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs/request.log',
+            'maxBytes': 1024 * 1024 * 50,  # 50 MB
+            'backupCount': 10,
+            'formatter': 'json',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'app_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'api.request': {
+            'handlers': ['console', 'request_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
