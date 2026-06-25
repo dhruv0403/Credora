@@ -18,7 +18,7 @@ from api.models import (
     ScheduleLineStatus, TransactionType
 )
 from api.serializers import SpaceSerializer, SpaceSettingsSerializer, ActivityLogSerializer
-from api.permissions import IsSpaceMember, IsOwner, ExcludesFieldMan
+from api.permissions import IsSpaceMember, IsOwner, ExcludesFieldMan, CanWrite
 from api.exceptions import BusinessValidationError
 
 def log_activity(space, event_type, entity_type, entity_id, actor_member, description, metadata=None):
@@ -60,8 +60,16 @@ class SpaceViewSet(viewsets.ModelViewSet):
             log_activity(space, "SPACE_CREATED", "SPACE", space.id, member, f"Space {space.name} created")
 
     def get_permissions(self):
-        if self.action in ['retrieve', 'update', 'partial_update', 'destroy', 'change_type', 'change_visibility', 'transfer_ownership', 'dashboard']:
+        if self.action in ['update', 'partial_update']:
+            return [IsAuthenticated(), IsSpaceMember(), CanWrite()]
+        elif self.action == 'destroy':
+            return [IsAuthenticated(), IsSpaceMember(), IsOwner()]
+        elif self.action == 'retrieve':
             return [IsAuthenticated(), IsSpaceMember()]
+        elif self.action in ['change_type', 'change_visibility', 'transfer_ownership']:
+            return [IsAuthenticated(), IsSpaceMember(), IsOwner()]
+        elif self.action == 'dashboard':
+            return [IsAuthenticated(), IsSpaceMember(), ExcludesFieldMan()]
         return super().get_permissions()
 
     def get_object(self):

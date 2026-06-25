@@ -1,6 +1,7 @@
 from django.db import models
 from .spaces import Space, SpaceMember
 from .loans import Loan, RepaymentScheduleLine
+from decimal import Decimal
 
 class CollectionMethod(models.TextChoices):
     CASH = 'CASH', 'Cash'
@@ -66,9 +67,9 @@ class TransactionAllocation(models.Model):
         on_delete=models.CASCADE,
         related_name='allocations'
     )
-    principal_component = models.DecimalField(max_digits=14, decimal_places=2, default=0.00)
-    interest_component = models.DecimalField(max_digits=14, decimal_places=2, default=0.00)
-    penalty_component = models.DecimalField(max_digits=14, decimal_places=2, default=0.00)
+    principal_component = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    interest_component = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    penalty_component = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal('0.00'))
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

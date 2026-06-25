@@ -21,7 +21,26 @@ def record_transaction(
     Records a financial transaction for a loan and allocates the payment.
     """
     amount = Decimal(str(amount))
-    
+    # Coerce transaction_date to aware datetime if string or date
+    if isinstance(transaction_date, str):
+        try:
+            transaction_date = timezone.datetime.fromisoformat(transaction_date.replace('Z', '+00:00'))
+        except ValueError:
+            try:
+                parsed_date = datetime.datetime.strptime(transaction_date, "%Y-%m-%d")
+                transaction_date = timezone.make_aware(parsed_date)
+            except ValueError:
+                raise BusinessValidationError(
+                    code="INVALID_DATE_FORMAT",
+                    message="Transaction date must be in YYYY-MM-DD or ISO format."
+                )
+                
+    if isinstance(transaction_date, datetime.date) and not isinstance(transaction_date, datetime.datetime):
+        transaction_date = timezone.make_aware(datetime.datetime.combine(transaction_date, datetime.time.min))
+
+    if timezone.is_naive(transaction_date):
+        transaction_date = timezone.make_aware(transaction_date)
+
     # Validation 1: Loan cannot be CLOSED (except for some special administrative cases, but standard is blocked)
     # Edge case #25: transaction posting blocked on CLOSED loans
     if loan.status == LoanStatus.CLOSED:
@@ -39,10 +58,6 @@ def record_transaction(
             message="Transaction date cannot predate the loan start date.",
             edge_case_ref=30
         )
-
-    # Coerce transaction_date to datetime if date only
-    if isinstance(transaction_date, datetime.date) and not isinstance(transaction_date, datetime.datetime):
-        transaction_date = timezone.make_aware(datetime.datetime.combine(transaction_date, datetime.time.min))
 
     # Warning for future date (Edge case #27)
     # Handled at view layer (we return a warning in the response)

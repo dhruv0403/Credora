@@ -1,6 +1,7 @@
 from django.db import models
 from .spaces import Space, SpaceMember
 from .contacts import Contact
+from decimal import Decimal
 
 class LoanDirection(models.TextChoices):
     GIVEN = 'GIVEN', 'Given'
@@ -171,7 +172,7 @@ class Loan(models.Model):
     )
 
     advance_payment_mode = models.CharField(max_length=30, choices=AdvancePaymentMode.choices)
-    advance_credit_balance = models.DecimalField(max_digits=14, decimal_places=2, default=0.00)
+    advance_credit_balance = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal('0.00'))
     penalty_type = models.CharField(
         max_length=20,
         choices=PenaltyType.choices,
@@ -280,7 +281,7 @@ class RepaymentScheduleLine(models.Model):
     line_no = models.PositiveSmallIntegerField()
     due_date = models.DateField()
     principal_due = models.DecimalField(max_digits=14, decimal_places=2)
-    interest_due = models.DecimalField(max_digits=14, decimal_places=2, default=0.00)
+    interest_due = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal('0.00'))
     status = models.CharField(
         max_length=10,
         choices=ScheduleLineStatus.choices,

@@ -1,12 +1,12 @@
 import datetime
 from decimal import Decimal
 from django.utils import timezone
-from django.db import transaction
+from django.db import transaction, models
 from api.models import (
     Loan, RepaymentScheduleLine, Disbursement, LoanRateHistory,
     InterestType, RepaymentType, RatePeriod, PaymentFrequency,
     InterestTiming, PaymentTimingRule, ScheduleLineStatus, MemberStatus,
-    FixedInterestFrequency
+    FixedInterestFrequency, LoanStatus, ClosureReason
 )
 
 def add_months(d, months):

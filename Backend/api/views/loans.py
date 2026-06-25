@@ -68,8 +68,16 @@ class LoanViewSet(viewsets.ModelViewSet):
         return qs
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy', 'activate', 'close', 'close_early', 'reopen', 'change_advance_mode', 'notes']:
+        if self.action in ['create', 'update', 'partial_update', 'destroy', 'activate', 'close', 'close_early', 'reopen', 'change_advance_mode', 'notes', 'custom_lines']:
             return [IsAuthenticated(), IsSpaceMember(), CanWrite()]
+        elif self.action == 'disbursements':
+            if self.request.method == 'POST':
+                return [IsAuthenticated(), IsSpaceMember(), CanWrite()]
+            return [IsAuthenticated(), IsSpaceMember()]
+        elif self.action in ['restructure_rate_change', 'restructure_extend_tenure', 'restructure_moratorium', 'waive_interest', 'waive_penalty', 'settle', 'write_off']:
+            return [IsAuthenticated(), IsSpaceMember(), IsOwnerOrAdmin()]
+        elif self.action in ['retrieve', 'list', 'schedule', 'restructure_history']:
+            return [IsAuthenticated(), IsSpaceMember()]
         return super().get_permissions()
 
     def perform_create(self, serializer):

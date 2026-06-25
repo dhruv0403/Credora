@@ -28,18 +28,19 @@ class TransactionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.
     permission_classes = [IsAuthenticated, IsSpaceMember]
 
     def get_queryset(self):
-        return Transaction.objects.filter(space=self.request.space)
+        return Transaction.objects.filter(space=self.request.space).order_by('-transaction_date', '-id')
 
     def get_permissions(self):
         if self.action in ['create', 'reverse']:
             return [IsAuthenticated(), IsSpaceMember(), CanRecordCollection()]
         return super().get_permissions()
 
-    def list(self, request, space_id=None):
+    def list(self, request, space_id=None, loan_id=None):
         qs = self.get_queryset()
-        loan_id = request.query_params.get('loan_id')
-        if loan_id:
-            qs = qs.filter(loan_id=loan_id)
+        
+        target_loan_id = loan_id or request.query_params.get('loan_id')
+        if target_loan_id:
+            qs = qs.filter(loan_id=target_loan_id)
         
         txn_type = request.query_params.get('type')
         if txn_type:
@@ -83,10 +84,7 @@ class TransactionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.
         log_activity(request.space, "TRANSACTION_RECORDED", "TRANSACTION", txn.id, request.space_member, f"Transaction recorded: {txn_type} of {amount}")
         
         warnings = []
-        parsed_date = txn_date if isinstance(txn_date, datetime.datetime) else datetime.datetime.strptime(txn_date, "%Y-%m-%d")
-        if timezone.is_naive(parsed_date):
-            parsed_date = timezone.make_aware(parsed_date)
-        if parsed_date > timezone.now():
+        if txn.transaction_date > timezone.now():
             warnings.append("Transaction date is in the future.")
             
         return Response({

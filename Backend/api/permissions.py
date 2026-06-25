@@ -11,7 +11,7 @@ class IsSpaceMember(BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
 
-        space_id = view.kwargs.get('space_id')
+        space_id = view.kwargs.get('space_id') or view.kwargs.get('pk')
         if not space_id:
             # If space_id is not in kwargs, try checking request.data or query params if needed,
             # but primary design is space-nested URLs.
