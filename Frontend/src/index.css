@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 97%; /* #FAF7F2 (paper) */
+    --foreground: 222 29% 16%; /* #1C2333 (ink) */
+    
+    --card: 40 33% 97%;
+    --card-foreground: 222 29% 16%;
+    
+    --popover: 40 33% 97%;
+    --popover-foreground: 222 29% 16%;
+    
+    --primary: 35 57% 42%; /* #A9762E (brass) */
+    --primary-foreground: 40 33% 97%;
+    
+    --secondary: 40 20% 93%; /* darker paper */
+    --secondary-foreground: 222 29% 16%;
+    
+    --muted: 40 20% 93%;
+    --muted-foreground: 220 9% 46%; /* #6B7280 (slate) */
+    
+    --accent: 40 20% 93%;
+    --accent-foreground: 35 57% 42%;
+    
+    --destructive: 11 60% 45%; /* #B8472E (payable/rust) */
+    --destructive-foreground: 40 33% 97%;
+    
+    --border: 220 9% 46% / 0.15; /* slate/15 */
+    --input: 220 9% 46% / 0.15;
+    --ring: 35 57% 42%;
+    
+    --radius: 0.375rem; /* 6px */
+  }
+
+  body {
+    background-color: #FAF7F2;
+    color: #1C2333;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #1C2333;
+  }
+}
+
+.font-figures {
+  font-variant-numeric: tabular-nums;
+}
